@@ -1,0 +1,18 @@
+[project]
+name = "medgemma"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "coremltools>=8.3.0",
+    "huggingface_hub[hf_xet]>=0.32.3",
+    "mlx>=0.25.2",
+    "mlx-lm>=0.24.1",
+    "torch>=2.7.0",
+    "transformers>=4.52.4",
+]
+
+[tool.pyrefly]
+project_includes = ["**/*"]
+project_excludes = ["**/.[!/.]*", "**/*venv/**/*"]
