@@ -1,0 +1,563 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXContainerItemProxy section */
+		84C6C9012DF4F83B008D1B3D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 84C6C8E92DF4F838008D1B3D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 84C6C8F02DF4F838008D1B3D;
+			remoteInfo = MedGemma;
+		};
+		84C6C90B2DF4F83B008D1B3D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 84C6C8E92DF4F838008D1B3D /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 84C6C8F02DF4F838008D1B3D;
+			remoteInfo = MedGemma;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		84C6C8F12DF4F838008D1B3D /* MedGemma.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MedGemma.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		84C6C9002DF4F83B008D1B3D /* MedGemmaTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MedGemmaTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		84C6C90A2DF4F83B008D1B3D /* MedGemmaUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MedGemmaUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		84C6C8F32DF4F838008D1B3D /* MedGemma */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MedGemma;
+			sourceTree = "<group>";
+		};
+		84C6C9032DF4F83B008D1B3D /* MedGemmaTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MedGemmaTests;
+			sourceTree = "<group>";
+		};
+		84C6C90D2DF4F83B008D1B3D /* MedGemmaUITests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = MedGemmaUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		84C6C8EE2DF4F838008D1B3D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84C6C8FD2DF4F83B008D1B3D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84C6C9072DF4F83B008D1B3D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		84C6C8E82DF4F838008D1B3D = {
+			isa = PBXGroup;
+			children = (
+				84C6C8F32DF4F838008D1B3D /* MedGemma */,
+				84C6C9032DF4F83B008D1B3D /* MedGemmaTests */,
+				84C6C90D2DF4F83B008D1B3D /* MedGemmaUITests */,
+				84C6C8F22DF4F838008D1B3D /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		84C6C8F22DF4F838008D1B3D /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				84C6C8F12DF4F838008D1B3D /* MedGemma.app */,
+				84C6C9002DF4F83B008D1B3D /* MedGemmaTests.xctest */,
+				84C6C90A2DF4F83B008D1B3D /* MedGemmaUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		84C6C8F02DF4F838008D1B3D /* MedGemma */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 84C6C9142DF4F83B008D1B3D /* Build configuration list for PBXNativeTarget "MedGemma" */;
+			buildPhases = (
+				84C6C8ED2DF4F838008D1B3D /* Sources */,
+				84C6C8EE2DF4F838008D1B3D /* Frameworks */,
+				84C6C8EF2DF4F838008D1B3D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				84C6C8F32DF4F838008D1B3D /* MedGemma */,
+			);
+			name = MedGemma;
+			packageProductDependencies = (
+			);
+			productName = MedGemma;
+			productReference = 84C6C8F12DF4F838008D1B3D /* MedGemma.app */;
+			productType = "com.apple.product-type.application";
+		};
+		84C6C8FF2DF4F83B008D1B3D /* MedGemmaTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 84C6C9172DF4F83B008D1B3D /* Build configuration list for PBXNativeTarget "MedGemmaTests" */;
+			buildPhases = (
+				84C6C8FC2DF4F83B008D1B3D /* Sources */,
+				84C6C8FD2DF4F83B008D1B3D /* Frameworks */,
+				84C6C8FE2DF4F83B008D1B3D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				84C6C9022DF4F83B008D1B3D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				84C6C9032DF4F83B008D1B3D /* MedGemmaTests */,
+			);
+			name = MedGemmaTests;
+			packageProductDependencies = (
+			);
+			productName = MedGemmaTests;
+			productReference = 84C6C9002DF4F83B008D1B3D /* MedGemmaTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		84C6C9092DF4F83B008D1B3D /* MedGemmaUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 84C6C91A2DF4F83B008D1B3D /* Build configuration list for PBXNativeTarget "MedGemmaUITests" */;
+			buildPhases = (
+				84C6C9062DF4F83B008D1B3D /* Sources */,
+				84C6C9072DF4F83B008D1B3D /* Frameworks */,
+				84C6C9082DF4F83B008D1B3D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				84C6C90C2DF4F83B008D1B3D /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				84C6C90D2DF4F83B008D1B3D /* MedGemmaUITests */,
+			);
+			name = MedGemmaUITests;
+			packageProductDependencies = (
+			);
+			productName = MedGemmaUITests;
+			productReference = 84C6C90A2DF4F83B008D1B3D /* MedGemmaUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		84C6C8E92DF4F838008D1B3D /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1640;
+				LastUpgradeCheck = 1640;
+				TargetAttributes = {
+					84C6C8F02DF4F838008D1B3D = {
+						CreatedOnToolsVersion = 16.4;
+					};
+					84C6C8FF2DF4F83B008D1B3D = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 84C6C8F02DF4F838008D1B3D;
+					};
+					84C6C9092DF4F83B008D1B3D = {
+						CreatedOnToolsVersion = 16.4;
+						TestTargetID = 84C6C8F02DF4F838008D1B3D;
+					};
+				};
+			};
+			buildConfigurationList = 84C6C8EC2DF4F838008D1B3D /* Build configuration list for PBXProject "MedGemma" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 84C6C8E82DF4F838008D1B3D;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 84C6C8F22DF4F838008D1B3D /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				84C6C8F02DF4F838008D1B3D /* MedGemma */,
+				84C6C8FF2DF4F83B008D1B3D /* MedGemmaTests */,
+				84C6C9092DF4F83B008D1B3D /* MedGemmaUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		84C6C8EF2DF4F838008D1B3D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84C6C8FE2DF4F83B008D1B3D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84C6C9082DF4F83B008D1B3D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		84C6C8ED2DF4F838008D1B3D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84C6C8FC2DF4F83B008D1B3D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		84C6C9062DF4F83B008D1B3D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		84C6C9022DF4F83B008D1B3D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 84C6C8F02DF4F838008D1B3D /* MedGemma */;
+			targetProxy = 84C6C9012DF4F83B008D1B3D /* PBXContainerItemProxy */;
+		};
+		84C6C90C2DF4F83B008D1B3D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 84C6C8F02DF4F838008D1B3D /* MedGemma */;
+			targetProxy = 84C6C90B2DF4F83B008D1B3D /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		84C6C9122DF4F83B008D1B3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		84C6C9132DF4F83B008D1B3D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		84C6C9152DF4F83B008D1B3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.blacktop.MedGemma;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		84C6C9162DF4F83B008D1B3D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.blacktop.MedGemma;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		84C6C9182DF4F83B008D1B3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.blacktop.MedGemmaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MedGemma.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MedGemma";
+			};
+			name = Debug;
+		};
+		84C6C9192DF4F83B008D1B3D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.blacktop.MedGemmaTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/MedGemma.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/MedGemma";
+			};
+			name = Release;
+		};
+		84C6C91B2DF4F83B008D1B3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.blacktop.MedGemmaUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = MedGemma;
+			};
+			name = Debug;
+		};
+		84C6C91C2DF4F83B008D1B3D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = io.blacktop.MedGemmaUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = MedGemma;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		84C6C8EC2DF4F838008D1B3D /* Build configuration list for PBXProject "MedGemma" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84C6C9122DF4F83B008D1B3D /* Debug */,
+				84C6C9132DF4F83B008D1B3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		84C6C9142DF4F83B008D1B3D /* Build configuration list for PBXNativeTarget "MedGemma" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84C6C9152DF4F83B008D1B3D /* Debug */,
+				84C6C9162DF4F83B008D1B3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		84C6C9172DF4F83B008D1B3D /* Build configuration list for PBXNativeTarget "MedGemmaTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84C6C9182DF4F83B008D1B3D /* Debug */,
+				84C6C9192DF4F83B008D1B3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		84C6C91A2DF4F83B008D1B3D /* Build configuration list for PBXNativeTarget "MedGemmaUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				84C6C91B2DF4F83B008D1B3D /* Debug */,
+				84C6C91C2DF4F83B008D1B3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 84C6C8E92DF4F838008D1B3D /* Project object */;
+}
