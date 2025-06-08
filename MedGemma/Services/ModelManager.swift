@@ -522,7 +522,8 @@ class ModelManager: ObservableObject {
           "color": "\(colorVariation ? "Uneven pigmentation with possible color variations" : "Relatively uniform coloration")",
           "diameter": "Clinical measurement required for accurate assessment",
           "evolution": "Unknown, requires clinical history and monitoring"
-        }"""
+        }
+        """
         
         // Generate recommendations based on urgency
         let recommendation = switch urgencyLevel {
