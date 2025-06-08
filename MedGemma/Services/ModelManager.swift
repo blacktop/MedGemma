@@ -27,12 +27,30 @@ class ModelManager: ObservableObject {
         isLoading = true
         
         do {
-            // Check if model exists
-            guard let modelURL = Bundle.main.url(forResource: "medgemma_4b_mobile", withExtension: "mlmodelc") else {
-                print("Model not found in bundle. Please add medgemma_4b_mobile.mlpackage to the project.")
+            // Check for different possible model file names/extensions
+            var modelURL: URL?
+            
+            // Try .mlmodelc first (compiled model)
+            modelURL = Bundle.main.url(forResource: "medgemma_4b_mobile", withExtension: "mlmodelc")
+            
+            // Try .mlpackage (package format)
+            if modelURL == nil {
+                modelURL = Bundle.main.url(forResource: "medgemma_4b_mobile", withExtension: "mlpackage")
+            }
+            
+            // Try without extension
+            if modelURL == nil {
+                modelURL = Bundle.main.url(forResource: "medgemma_4b_mobile", withExtension: nil)
+            }
+            
+            guard let finalModelURL = modelURL else {
+                print("Model not found in bundle. Please add medgemma_4b_mobile model file to the project.")
+                print("Checked for: medgemma_4b_mobile.mlmodelc, medgemma_4b_mobile.mlpackage")
                 isLoading = false
                 return
             }
+            
+            print("Found model at: \(finalModelURL)")
             
             // Configure model for memory efficiency
             let config = MLModelConfiguration()
@@ -40,10 +58,17 @@ class ModelManager: ObservableObject {
             config.allowLowPrecisionAccumulationOnGPU = true
             
             // Load model with memory optimization
-            model = try MLModel(contentsOf: modelURL, configuration: config)
+            model = try MLModel(contentsOf: finalModelURL, configuration: config)
             isModelLoaded = true
             
             print("Model loaded successfully with memory optimizations")
+            
+            // Print model information for debugging
+            if let modelDescription = model?.modelDescription {
+                print("Model description: \(modelDescription)")
+                print("Input features: \(modelDescription.inputDescriptionsByName.keys)")
+                print("Output features: \(modelDescription.outputDescriptionsByName.keys)")
+            }
         } catch {
             print("Failed to load model: \(error)")
             // Clear any partial state
@@ -72,18 +97,23 @@ class ModelManager: ObservableObject {
         // Build context from previous messages
         var fullPrompt = buildPrompt(from: prompt, context: context)
         
-        // Tokenize input
-        let tokens = tokenize(fullPrompt)
-        
-        // TODO: Implement actual model inference
-        // For now, return a placeholder response
-        try await Task.sleep(nanoseconds: 2_000_000_000) // Simulate processing
-        
-        return """
-        I understand you're asking about "\(prompt)". While I'm designed to provide medical information, I'm currently in setup phase. Once fully integrated, I'll be able to offer detailed medical insights based on the MedGemma model.
-        
-        Remember: Always consult with healthcare professionals for personalized medical advice.
-        """
+        do {
+            // Prepare text-only input for the model
+            let input = try prepareTextInput(prompt: fullPrompt)
+            
+            // Run model inference
+            let prediction = try await model.prediction(from: input)
+            
+            // Extract and process the output
+            let responseText = try extractTextFromPrediction(prediction)
+            
+            return responseText
+            
+        } catch {
+            print("Text model inference failed: \(error)")
+            // Fallback response if model fails
+            return generateFallbackTextResponse(prompt: prompt)
+        }
     }
     
     private func buildPrompt(from userInput: String, context: [Message]) -> String {
@@ -136,32 +166,30 @@ class ModelManager: ObservableObject {
         // Create multimodal prompt combining image and text
         let fullPrompt = buildImageAnalysisPrompt(prompt: prompt)
         
-        // TODO: Implement actual model inference with image input
-        // For now, simulate processing and return a medical analysis
-        try await Task.sleep(nanoseconds: 3_000_000_000)
-        
-        return """
-        Based on the dermatological image analysis:
-        
-        **Potential Conditions:**
-        • Benign nevus (common mole) - 85% confidence
-        • Seborrheic keratosis - 45% confidence
-        
-        **Observations:**
-        • Regular borders with uniform pigmentation
-        • Symmetric appearance
-        • No signs of rapid changes
-        
-        **Recommendations:**
-        • Monitor for any changes in size, color, or shape
-        • Annual dermatological examination
-        • Sun protection with SPF 30+
-        • Photo documentation for future comparison
-        
-        **Urgency Level:** Low
-        
-        ⚠️ **Important:** This analysis is for educational purposes only. Please consult a dermatologist for professional diagnosis and treatment recommendations.
-        """
+        do {
+            print("Starting image analysis with model...")
+            
+            // Prepare model input
+            let input = try prepareModelInput(image: imageBuffer, prompt: fullPrompt)
+            print("Model input prepared successfully")
+            
+            // Run model inference
+            print("Running model prediction...")
+            let prediction = try await model.prediction(from: input)
+            print("Model prediction completed")
+            
+            // Extract and process the output
+            let analysisResult = try extractAnalysisFromPrediction(prediction)
+            print("Analysis result extracted successfully")
+            
+            return analysisResult
+            
+        } catch {
+            print("Model inference failed: \(error)")
+            print("Error details: \(error.localizedDescription)")
+            // Fallback to basic analysis if model fails
+            return generateFallbackAnalysis(prompt: prompt)
+        }
     }
     
     private func buildImageAnalysisPrompt(prompt: String) -> String {
@@ -177,6 +205,115 @@ class ModelManager: ObservableObject {
         Context: \(prompt)
         
         Always emphasize the need for professional medical consultation.
+        """
+    }
+    
+    // MARK: - Model Input/Output Processing
+    
+    private func prepareModelInput(image: CVPixelBuffer, prompt: String) throws -> MLFeatureProvider {
+        // Try different input feature names that the model might expect
+        var inputDict: [String: MLFeatureValue] = [:]
+        
+        // Common image input names
+        inputDict["image"] = MLFeatureValue(pixelBuffer: image)
+        inputDict["input_image"] = MLFeatureValue(pixelBuffer: image)
+        inputDict["pixel_values"] = MLFeatureValue(pixelBuffer: image)
+        
+        // Common text input names  
+        inputDict["text"] = MLFeatureValue(string: prompt)
+        inputDict["text_input"] = MLFeatureValue(string: prompt)
+        inputDict["prompt"] = MLFeatureValue(string: prompt)
+        inputDict["input_text"] = MLFeatureValue(string: prompt)
+        
+        let inputFeatures = try MLDictionaryFeatureProvider(dictionary: inputDict)
+        
+        return inputFeatures
+    }
+    
+    private func extractAnalysisFromPrediction(_ prediction: MLFeatureProvider) throws -> String {
+        // Try different output feature names
+        let possibleOutputNames = ["output", "text_output", "generated_text", "response", "result"]
+        
+        for outputName in possibleOutputNames {
+            if let outputFeature = prediction.featureValue(for: outputName),
+               let outputText = outputFeature.stringValue {
+                print("Found output in feature: \(outputName)")
+                return formatModelOutput(outputText)
+            }
+        }
+        
+        // If we can't find text output, list available features for debugging
+        let availableFeatures = prediction.featureNames
+        print("Available output features: \(availableFeatures)")
+        
+        throw ModelError.inferenceError("Failed to extract model output. Available features: \(availableFeatures)")
+    }
+    
+    private func formatModelOutput(_ rawOutput: String) -> String {
+        // Clean up and structure the model's raw output
+        var formattedOutput = rawOutput.trimmingCharacters(in: .whitespacesAndNewlines)
+        
+        // Add safety disclaimer if not present
+        if !formattedOutput.lowercased().contains("consult") && !formattedOutput.lowercased().contains("professional") {
+            formattedOutput += "\n\n⚠️ **Important:** This analysis is for educational purposes only. Please consult a dermatologist for professional diagnosis and treatment recommendations."
+        }
+        
+        return formattedOutput
+    }
+    
+    private func generateFallbackAnalysis(prompt: String) -> String {
+        return """
+        **Image Analysis Status:** Model temporarily unavailable
+        
+        I can see you've uploaded an image for dermatological analysis. While the AI model is currently unavailable, here are some general recommendations:
+        
+        **General Skin Health Guidelines:**
+        • Monitor any changes in size, color, shape, or texture
+        • Use broad-spectrum sunscreen daily (SPF 30+)
+        • Perform regular self-examinations
+        • Schedule annual skin checks with a dermatologist
+        • Take photos for comparison over time
+        
+        **When to Seek Immediate Care:**
+        • Rapid changes in moles or spots
+        • Bleeding, itching, or pain
+        • Asymmetrical growths
+        • Irregular borders or colors
+        
+        ⚠️ **Important:** This is not a substitute for professional medical evaluation. Please consult a dermatologist for proper diagnosis and treatment recommendations.
+        """
+    }
+    
+    private func prepareTextInput(prompt: String) throws -> MLFeatureProvider {
+        // Create text-only input for the model
+        let inputFeatures = try MLDictionaryFeatureProvider(dictionary: [
+            "text_input": MLFeatureValue(string: prompt)
+        ])
+        
+        return inputFeatures
+    }
+    
+    private func extractTextFromPrediction(_ prediction: MLFeatureProvider) throws -> String {
+        // Use the same robust extraction as image analysis
+        return try extractAnalysisFromPrediction(prediction)
+    }
+    
+    private func generateFallbackTextResponse(prompt: String) -> String {
+        return """
+        I'm MedGemma, your medical AI assistant. While the model is currently unavailable, I can provide some general guidance.
+        
+        For your question about "\(prompt)", I recommend:
+        • Consulting with a healthcare professional for personalized advice
+        • Seeking immediate care if symptoms are severe or worsening
+        • Keeping track of any changes in your condition
+        
+        **Common Medical Resources:**
+        • Primary care physician
+        • Urgent care for non-emergency concerns
+        • Emergency services for serious symptoms
+        • Telehealth consultations when appropriate
+        
+        ⚠️ **Important:** This is not a substitute for professional medical advice. Always consult healthcare providers for proper diagnosis and treatment.
         """
     }
 }
