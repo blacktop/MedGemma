@@ -119,49 +119,255 @@ class SkinAnalysisViewModel: ObservableObject {
     
     private func generateAnalysisPrompt() -> String {
         """
-        Analyze this dermatological image and provide your assessment:
+        Analyze this dermatological image and provide your assessment in JSON format.
 
-        1. What skin condition do you think this lesion represents?
-        2. Explain your reasoning using dermatological criteria (color, border, size, elevation, etc.)
-        3. Provide a percentage of certainty for your diagnosis (e.g., "80% likely to be melanoma")
-        4. List important considerations and next steps
-        5. Include appropriate medical disclaimers
+        Please respond with ONLY a valid JSON object containing the following fields:
 
-        Focus on key dermatological features like:
+        {
+          "diagnosis": "Primary diagnosis (e.g., Melanoma, Basal Cell Carcinoma, Benign Mole)",
+          "image_analysis": {
+            "color": "Description of color characteristics",
+            "border": "Description of border characteristics", 
+            "size": "Description of size characteristics",
+            "elevation": "Description of elevation/texture"
+          },
+          "recommendation": "Primary medical recommendation for the patient",
+          "confidence_level": "Confidence description with percentage (e.g., 'High (likely >80%)')",
+          "additional_notes": "Important considerations and medical disclaimers"
+        }
+
+        Focus your analysis on dermatological features:
         - ABCDE criteria for melanoma (Asymmetry, Border, Color, Diameter, Evolution)
-        - Color variations and patterns
-        - Border irregularities
-        - Size and elevation
-        - Any concerning characteristics
+        - Color variations and pigmentation patterns
+        - Border regularity and definition
+        - Size and diameter measurements
+        - Elevation, texture, and surface characteristics
+        - Any concerning or suspicious features
 
-        Please be specific about your confidence level as a percentage and explain what the patient should do next.
+        Be specific about confidence levels using percentages when possible. Always include appropriate medical disclaimers about the need for professional diagnosis.
 
-        Important: This is for educational purposes only. Always recommend consulting a healthcare professional for proper diagnosis.
+        Respond with ONLY the JSON object, no additional text.
         """
     }
     
     nonisolated func parseAnalysisResponse(_ response: String) -> SkinAnalysisResult {
-        print("🧠 [PARSER] Starting to parse natural language model response...")
+        print("🧠 [PARSER] Starting to parse JSON model response...")
         print("🧠 [PARSER] Response length: \(response.count) characters")
-        print("🧠 [PARSER] Full response: \(response)")
+        print("🧠 [PARSER] Raw response: \(response)")
         
-        var conditions: [PotentialCondition] = []
+        // Try to parse as JSON first
+        if let jsonResult = parseJSONResponse(response) {
+            print("🧠 [PARSER] Successfully parsed JSON response")
+            return jsonResult
+        }
+        
+        // Fallback to natural language parsing if JSON fails
+        print("🧠 [PARSER] JSON parsing failed, falling back to natural language parsing")
+        return parseNaturalLanguageResponse(response)
+    }
+    
+    // MARK: - JSON Parsing
+    
+    nonisolated private func parseJSONResponse(_ response: String) -> SkinAnalysisResult? {
+        // Clean up the response to extract just the JSON part
+        let cleanedResponse = extractJSONFromResponse(response)
+        
+        guard let data = cleanedResponse.data(using: .utf8) else {
+            print("🧠 [PARSER] Failed to convert response to data")
+            return nil
+        }
+        
+        do {
+            let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
+            guard let json = json else {
+                print("🧠 [PARSER] Failed to parse JSON object")
+                return nil
+            }
+            
+            // Extract fields from JSON
+            let diagnosis = json["diagnosis"] as? String ?? "Dermatological Finding"
+            let recommendation = json["recommendation"] as? String ?? "Consult a dermatologist"
+            let confidenceLevel = json["confidence_level"] as? String ?? "Medium"
+            let additionalNotes = json["additional_notes"] as? String ?? "Professional evaluation recommended"
+            
+            // Parse image analysis if present
+            var analysisDescription = additionalNotes
+            if let imageAnalysis = json["image_analysis"] as? [String: Any] {
+                let features = [
+                    "Color: \(imageAnalysis["color"] as? String ?? "Not specified")",
+                    "Border: \(imageAnalysis["border"] as? String ?? "Not specified")",
+                    "Size: \(imageAnalysis["size"] as? String ?? "Not specified")",
+                    "Elevation: \(imageAnalysis["elevation"] as? String ?? "Not specified")"
+                ]
+                analysisDescription = features.joined(separator: ". ") + ". " + additionalNotes
+            }
+            
+            // Extract confidence percentage
+            let confidence = extractConfidenceFromString(confidenceLevel)
+            
+            // Determine urgency level
+            let urgencyLevel = determineUrgencyFromDiagnosis(diagnosis, recommendation: recommendation)
+            
+            // Create condition
+            let condition = PotentialCondition(
+                name: diagnosis,
+                description: analysisDescription,
+                confidence: confidence
+            )
+            
+            // Generate recommendations
+            let recommendations = generateRecommendationsFromJSON(
+                diagnosis: diagnosis,
+                recommendation: recommendation,
+                urgency: urgencyLevel
+            )
+            
+            let result = SkinAnalysisResult(
+                conditions: [condition],
+                recommendations: recommendations,
+                urgencyLevel: urgencyLevel,
+                confidence: confidence,
+                timestamp: Date()
+            )
+            
+            print("🧠 [PARSER] JSON parsing completed:")
+            print("🧠 [PARSER] - Diagnosis: \(diagnosis)")
+            print("🧠 [PARSER] - Confidence: \(Int(confidence * 100))%")
+            print("🧠 [PARSER] - Urgency: \(urgencyLevel.rawValue)")
+            print("🧠 [PARSER] - Recommendations: \(recommendations.count)")
+            
+            return result
+            
+        } catch {
+            print("🧠 [PARSER] JSON parsing error: \(error)")
+            return nil
+        }
+    }
+    
+    nonisolated private func extractJSONFromResponse(_ response: String) -> String {
+        // Look for JSON object boundaries
+        guard let startIndex = response.firstIndex(of: "{"),
+              let endIndex = response.lastIndex(of: "}") else {
+            return response
+        }
+        
+        let jsonString = String(response[startIndex...endIndex])
+        return jsonString
+    }
+    
+    nonisolated private func extractConfidenceFromString(_ confidenceLevel: String) -> Double {
+        let lowercaseLevel = confidenceLevel.lowercased()
+        
+        // Extract percentage if present
+        if let regex = try? NSRegularExpression(pattern: #"(\d+)%"#),
+           let match = regex.firstMatch(in: confidenceLevel, range: NSRange(location: 0, length: confidenceLevel.count)),
+           let range = Range(match.range(at: 1), in: confidenceLevel),
+           let percentage = Double(String(confidenceLevel[range])) {
+            return percentage / 100.0
+        }
+        
+        // Handle special cases like ">80%"
+        if lowercaseLevel.contains(">80") || lowercaseLevel.contains("likely >80") {
+            return 0.85
+        }
+        
+        // Parse confidence levels
+        if lowercaseLevel.contains("high") {
+            return 0.85
+        } else if lowercaseLevel.contains("medium") || lowercaseLevel.contains("moderate") {
+            return 0.70
+        } else if lowercaseLevel.contains("low") {
+            return 0.50
+        }
+        
+        return 0.75 // Default
+    }
+    
+    nonisolated private func determineUrgencyFromDiagnosis(_ diagnosis: String, recommendation: String) -> UrgencyLevel {
+        let lowerDiagnosis = diagnosis.lowercased()
+        let lowerRecommendation = recommendation.lowercased()
+        
+        // Urgent conditions
+        if lowerDiagnosis.contains("melanoma") ||
+           lowerRecommendation.contains("immediate") ||
+           lowerRecommendation.contains("urgent") ||
+           lowerDiagnosis.contains("malignant") {
+            return .urgent
+        }
+        
+        // High priority
+        if lowerDiagnosis.contains("carcinoma") ||
+           lowerDiagnosis.contains("suspicious") ||
+           lowerRecommendation.contains("biopsy") ||
+           lowerRecommendation.contains("soon") {
+            return .high
+        }
+        
+        // Medium priority
+        if lowerDiagnosis.contains("keratosis") ||
+           lowerRecommendation.contains("monitor") ||
+           lowerRecommendation.contains("follow") {
+            return .medium
+        }
+        
+        // Low priority
+        if lowerDiagnosis.contains("benign") ||
+           lowerRecommendation.contains("routine") {
+            return .low
+        }
+        
+        return .medium // Default
+    }
+    
+    nonisolated private func generateRecommendationsFromJSON(diagnosis: String, recommendation: String, urgency: UrgencyLevel) -> [String] {
         var recommendations: [String] = []
-        var urgencyLevel: UrgencyLevel = .low
-        var confidence: Double = 0.75
+        
+        // Add primary recommendation
+        recommendations.append(recommendation)
+        
+        // Add urgency-specific recommendations
+        switch urgency {
+        case .urgent:
+            recommendations.append("🚨 This requires IMMEDIATE medical attention")
+            recommendations.append("Schedule appointment within 24-48 hours")
+            recommendations.append("Consider emergency consultation if rapid changes")
+        case .high:
+            recommendations.append("Schedule dermatologist appointment within 1-2 weeks")
+            recommendations.append("Monitor closely for any changes")
+        case .medium:
+            recommendations.append("Consider evaluation within 1 month")
+            recommendations.append("Monitor for changes and document with photos")
+        case .low:
+            recommendations.append("Routine monitoring recommended")
+            recommendations.append("Annual dermatological check-up")
+        }
+        
+        // Add general recommendations
+        recommendations.append("Take photos for documentation and comparison")
+        recommendations.append("Use broad-spectrum sunscreen daily (SPF 30+)")
+        recommendations.append("⚠️ This is AI analysis - consult a dermatologist for diagnosis")
+        
+        return recommendations
+    }
+    
+    // MARK: - Natural Language Parsing Fallback
+    
+    nonisolated private func parseNaturalLanguageResponse(_ response: String) -> SkinAnalysisResult {
+        print("🧠 [PARSER] Using natural language fallback parsing...")
         
         let lowercaseResponse = response.lowercased()
         
         // Extract percentage confidence from response
-        confidence = extractConfidencePercentage(from: response)
+        let confidence = extractConfidencePercentage(from: response)
         
         // Identify primary diagnosis from the response
         let primaryDiagnosis = extractPrimaryDiagnosis(from: response)
         
         // Determine urgency based on diagnosis and language
-        urgencyLevel = determineUrgencyLevel(from: response, diagnosis: primaryDiagnosis)
+        let urgencyLevel = determineUrgencyLevel(from: response, diagnosis: primaryDiagnosis)
         
         // Create main condition based on diagnosis
+        var conditions: [PotentialCondition] = []
         if !primaryDiagnosis.isEmpty {
             conditions.append(PotentialCondition(
                 name: primaryDiagnosis,
@@ -178,7 +384,7 @@ class SkinAnalysisViewModel: ObservableObject {
         }
         
         // Extract recommendations from the response
-        recommendations = extractRecommendationsFromResponse(response, urgency: urgencyLevel)
+        let recommendations = extractRecommendationsFromResponse(response, urgency: urgencyLevel)
         
         let result = SkinAnalysisResult(
             conditions: conditions,
@@ -192,7 +398,6 @@ class SkinAnalysisViewModel: ObservableObject {
         print("🧠 [PARSER] - Primary diagnosis: \(primaryDiagnosis)")
         print("🧠 [PARSER] - Confidence: \(Int(confidence * 100))%")
         print("🧠 [PARSER] - Urgency: \(urgencyLevel.rawValue)")
-        print("🧠 [PARSER] - Recommendations: \(recommendations.count)")
         
         return result
     }

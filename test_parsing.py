@@ -4,70 +4,228 @@ Quick test script for MedGemma parsing logic without needing to build the full i
 This simulates the response parsing that happens in SkinAnalysisViewModel.
 """
 
-def test_melanoma_response_parsing():
-    print("🔬 Testing Actual Melanoma Model Response Parsing...")
+def test_json_response_parsing():
+    print("🔬 Testing JSON Melanoma Model Response Parsing...")
     
-    # Real model response example from the user
-    melanoma_response = """
-    Based on the image, the lesion appears to be a melanoma.
+    # JSON response example from the user
+    melanoma_json_response = """{
+  "diagnosis": "Melanoma",
+  "image_analysis": {
+    "color": "Dark, irregular, uneven",
+    "border": "Irregular and poorly defined",
+    "size": "Relatively large",
+    "elevation": "Raised"
+  },
+  "recommendation": "Schedule an immediate appointment with a dermatologist for a clinical examination and biopsy.",
+  "confidence_level": "High (likely >80%)",
+  "additional_notes": "This is a preliminary assessment based on a single image. A definitive diagnosis requires a clinical examination by a dermatologist."
+}"""
+    
+    # Test JSON parsing (simulating Swift parseJSONResponse function)
+    import json
+    import re
+    
+    try:
+        # Parse JSON
+        data = json.loads(melanoma_json_response)
+        
+        # Extract fields
+        diagnosis = data.get("diagnosis", "Dermatological Finding")
+        recommendation = data.get("recommendation", "Consult a dermatologist")
+        confidence_level = data.get("confidence_level", "Medium")
+        additional_notes = data.get("additional_notes", "Professional evaluation recommended")
+        
+        # Parse image analysis
+        analysis_description = additional_notes
+        if "image_analysis" in data:
+            image_analysis = data["image_analysis"]
+            features = [
+                f"Color: {image_analysis.get('color', 'Not specified')}",
+                f"Border: {image_analysis.get('border', 'Not specified')}",
+                f"Size: {image_analysis.get('size', 'Not specified')}",
+                f"Elevation: {image_analysis.get('elevation', 'Not specified')}"
+            ]
+            analysis_description = ". ".join(features) + ". " + additional_notes
+        
+        # Extract confidence percentage
+        confidence = 0.75  # default
+        # Handle special cases like ">80%"
+        if "likely >80" in confidence_level.lower():
+            confidence = 0.85
+        else:
+            # Extract percentage if present
+            percent_match = re.search(r'(\d+)%', confidence_level)
+            if percent_match:
+                confidence = float(percent_match.group(1)) / 100.0
+            elif "high" in confidence_level.lower():
+                confidence = 0.85
+            elif "medium" in confidence_level.lower():
+                confidence = 0.70
+            elif "low" in confidence_level.lower():
+                confidence = 0.50
+        
+        # Determine urgency level from diagnosis and recommendation
+        lower_diagnosis = diagnosis.lower()
+        lower_recommendation = recommendation.lower()
+        
+        if ("melanoma" in lower_diagnosis or 
+            "immediate" in lower_recommendation or
+            "urgent" in lower_recommendation or
+            "malignant" in lower_diagnosis):
+            urgency_level = "urgent"
+        elif ("carcinoma" in lower_diagnosis or
+              "suspicious" in lower_diagnosis or
+              "biopsy" in lower_recommendation or
+              "soon" in lower_recommendation):
+            urgency_level = "high"
+        elif ("keratosis" in lower_diagnosis or
+              "monitor" in lower_recommendation or
+              "follow" in lower_recommendation):
+            urgency_level = "medium"
+        elif ("benign" in lower_diagnosis or
+              "routine" in lower_recommendation):
+            urgency_level = "low"
+        else:
+            urgency_level = "medium"
+        
+        # Create condition
+        condition = {
+            "name": diagnosis,
+            "description": analysis_description,
+            "confidence": confidence
+        }
+        
+        # Generate recommendations
+        recommendations = [recommendation]
+        
+        # Add urgency-specific recommendations
+        if urgency_level == "urgent":
+            recommendations.extend([
+                "🚨 This requires IMMEDIATE medical attention",
+                "Schedule appointment within 24-48 hours",
+                "Consider emergency consultation if rapid changes"
+            ])
+        elif urgency_level == "high":
+            recommendations.extend([
+                "Schedule dermatologist appointment within 1-2 weeks",
+                "Monitor closely for any changes"
+            ])
+        elif urgency_level == "medium":
+            recommendations.extend([
+                "Consider evaluation within 1 month",
+                "Monitor for changes and document with photos"
+            ])
+        else:
+            recommendations.extend([
+                "Routine monitoring recommended",
+                "Annual dermatological check-up"
+            ])
+        
+        # Add general recommendations
+        recommendations.extend([
+            "Take photos for documentation and comparison",
+            "Use broad-spectrum sunscreen daily (SPF 30+)",
+            "⚠️ This is AI analysis - consult a dermatologist for diagnosis"
+        ])
+        
+        print("✅ JSON Parsing Results:")
+        print(f"   Diagnosis: {diagnosis}")
+        print(f"   Urgency: {urgency_level.upper()}")
+        print(f"   Confidence: {int(confidence * 100)}%")
+        print(f"   Recommendations: {len(recommendations)}")
+        for i, rec in enumerate(recommendations[:4]):
+            print(f"   {i + 1}. {rec}")
+        
+        # Assertions for JSON parsing
+        assert diagnosis == "Melanoma", f"❌ Should extract 'Melanoma' as diagnosis, got '{diagnosis}'"
+        assert urgency_level == "urgent", f"❌ Should detect URGENT for melanoma, got {urgency_level}"
+        assert confidence >= 0.8, f"❌ Should extract high confidence (>80%), got {int(confidence * 100)}%"
+        assert len(recommendations) > 0, "❌ Should have recommendations"
+        assert any("immediate" in rec.lower() for rec in recommendations), "❌ Should have immediate recommendations"
+        
+        print("✅ JSON parsing test PASSED")
+        return True
+        
+    except json.JSONDecodeError as e:
+        print(f"❌ JSON parsing failed: {e}")
+        return False
 
-    Here's why:
-
-    Color: The lesion is a dark, irregular, and uneven color. Melanomas often have a dark, brown, or black hue.
-    Border: The border is irregular and poorly defined. Melanomas typically have borders that are not smooth and well-defined.
-    Size: The lesion is relatively large, which is a concerning feature.
-    Elevation: The lesion appears raised, which is another characteristic of melanoma.
-    Important Considerations:
-
-    This is a preliminary assessment based on a single image. A definitive diagnosis requires a clinical examination by a dermatologist, including a biopsy.
-    The presence of these features does not automatically mean the lesion is cancerous. However, it warrants further investigation.
-    It is crucial to consult a dermatologist for a proper diagnosis and treatment plan.
-    Disclaimer: I am an AI and cannot provide medical diagnoses. This information is for educational purposes only and should not be considered a substitute for professional medical advice.
-
-    Regarding the certainty percentage:
-
-    It's impossible to give a precise percentage of certainty without a clinical examination and biopsy. However, based on the image, the likelihood of it being a melanoma is high (likely >80%).
-
-    What you should do:
-
-    Schedule an Appointment with a Dermatologist Immediately: This is the most important step. A dermatologist is a skin specialist and can properly examine the lesion, determine if it is cancerous, and recommend the appropriate treatment. Don't delay.
-    Prepare for Your Appointment:
-    Take Photos: If possible, take clear, well-lit photos of the lesion. This will help the dermatologist assess them accurately.
-    Note Any Symptoms: Write down any symptoms you've been experiencing, such as itching, pain, bleeding, or changes in the lesion's appearance.
-    Medical History: Be prepared to discuss your medical history, including any previous skin conditions, medications you're taking, and family history of skin cancer.
-    Disclaimer: I am an AI and cannot provide medical diagnoses. This information is for educational purposes only and should not be considered a substitute for professional medical advice.
+def test_melanoma_response_parsing():
+    print("\n🔬 Testing Natural Language Melanoma Model Response Parsing...")
+    
+    # Natural language response for fallback testing
+    melanoma_natural_response = """
+    **Dermatological Analysis Results:**
+    
+    **Observed Characteristics:**
+    • irregular patterns detected
+    • asymmetrical features present
+    • dark, uneven pigmentation observed
+    • poorly defined borders noted
+    • elevated surface texture
+    
+    **Assessment Indicators:**
+    • notable concerning characteristics
+    • requires immediate professional evaluation
+    • melanoma characteristics present (>80% confidence)
+    
+    **Urgency Level:** URGENT
+    
+    **What you should do:**
+    - Schedule dermatologist appointment IMMEDIATELY
+    - Seek evaluation within 24-48 hours
+    - Document any changes with photos
+    - Discuss biopsy options with dermatologist
+    
+    **Important:** This analysis requires validation by a qualified healthcare provider.
     """
     
-    # Simulate the new natural language parsing logic
-    response = melanoma_response.lower()
+    # Simulate natural language parsing (fallback when JSON fails)
+    response = melanoma_natural_response.lower()
     
     # Extract confidence percentage 
     confidence = 0.75  # default
     import re
-    percent_match = re.search(r'(\d+)%', melanoma_response)
+    percent_match = re.search(r'(\d+)%', melanoma_natural_response)
     if percent_match:
         confidence = float(percent_match.group(1)) / 100.0
-    elif "likely >80%" in melanoma_response:
-        confidence = 0.85  # interpret >80% as 85%
+    elif "likely >80%" in melanoma_natural_response or ">80%" in melanoma_natural_response:
+        confidence = 0.85
     
     # Extract primary diagnosis
-    primary_diagnosis = "Melanoma" if "melanoma" in response else "Skin Lesion"
+    if "melanoma" in response:
+        primary_diagnosis = "Melanoma"
+    elif "carcinoma" in response:
+        primary_diagnosis = "Carcinoma"
+    elif "lesion" in response:
+        primary_diagnosis = "Skin Lesion"
+    else:
+        primary_diagnosis = "Dermatological Finding"
     
     # Determine urgency
-    urgency_level = "urgent"  # melanoma = urgent
-    if "immediately" in response or "urgent" in response or "melanoma" in response:
+    if ("immediately" in response or "urgent" in response or 
+        "melanoma" in response or "emergency" in response):
         urgency_level = "urgent"
+    elif ("concerning" in response or "suspicious" in response or
+          "irregular" in response or "asymmetric" in response):
+        urgency_level = "high"
+    elif "monitor" in response or "follow up" in response:
+        urgency_level = "medium"
+    elif "benign" in response or "routine" in response:
+        urgency_level = "low"
+    else:
+        urgency_level = "medium"
     
     # Create condition
     conditions = [{
         "name": primary_diagnosis,
-        "description": "AI analysis based on visual assessment showing irregular patterns, asymmetrical features, dark uneven color, poorly defined borders, and elevated appearance",
+        "description": "AI analysis showing irregular patterns, asymmetrical features, dark uneven color, poorly defined borders, and elevated appearance",
         "confidence": confidence
     }]
     
     # Extract recommendations from response
     recommendations = []
-    lines = melanoma_response.split('\n')
+    lines = melanoma_natural_response.split('\n')
     in_recommendation_section = False
     
     for line in lines:
@@ -75,10 +233,10 @@ def test_melanoma_response_parsing():
         if "what you should do" in line.lower():
             in_recommendation_section = True
             continue
-        if "disclaimer:" in line.lower():
+        if "important:" in line.lower():
             break
-        if in_recommendation_section and line and (":" in line or line.startswith("-")):
-            clean_line = line.replace(":", "").strip()
+        if in_recommendation_section and line and (line.startswith("-") or line.startswith("•")):
+            clean_line = line.replace("-", "").replace("•", "").strip()
             if clean_line:
                 recommendations.append(clean_line)
     
@@ -91,7 +249,7 @@ def test_melanoma_response_parsing():
             "Discuss biopsy options with dermatologist"
         ]
     
-    print("✅ Results:")
+    print("✅ Natural Language Results:")
     print(f"   Urgency: {urgency_level.upper()}")
     print(f"   Conditions: {len(conditions)}")
     for condition in conditions:
@@ -100,7 +258,7 @@ def test_melanoma_response_parsing():
     for i, rec in enumerate(recommendations[:3]):
         print(f"   {i + 1}. {rec}")
     
-    # Assertions for new natural language parsing
+    # Assertions for natural language parsing
     assert urgency_level == "urgent", f"❌ Should detect URGENT for melanoma, got {urgency_level}"
     assert len(conditions) > 0, "❌ Should have detected conditions"
     assert conditions[0]["name"] == "Melanoma", f"❌ Should detect Melanoma as primary diagnosis, got {conditions[0]['name']}"
@@ -219,6 +377,7 @@ def main():
     print("=" * 60)
     
     try:
+        test_json_response_parsing()
         test_melanoma_response_parsing()
         test_benign_response_parsing()
         test_logits_analysis_simulation()
