@@ -121,22 +121,23 @@ class SkinAnalysisViewModel: ObservableObject {
         """
         Analyze this dermatological image and provide your assessment in JSON format.
 
-        Please respond with ONLY a valid JSON object containing the following fields:
+        IMPORTANT: Your response must be ONLY a valid JSON object. No text before or after the JSON.
 
+        Example response format:
         {
-          "diagnosis": "Primary diagnosis (e.g., Melanoma, Basal Cell Carcinoma, Benign Mole)",
+          "diagnosis": "Melanoma",
           "image_analysis": {
-            "color": "Description of color characteristics",
-            "border": "Description of border characteristics", 
-            "size": "Description of size characteristics",
-            "elevation": "Description of elevation/texture"
+            "color": "Dark, irregular, uneven",
+            "border": "Irregular and poorly defined",
+            "size": "Relatively large",
+            "elevation": "Raised"
           },
-          "recommendation": "Primary medical recommendation for the patient",
-          "confidence_level": "Confidence description with percentage (e.g., 'High (likely >80%)')",
-          "additional_notes": "Important considerations and medical disclaimers"
+          "recommendation": "Schedule an immediate appointment with a dermatologist for clinical examination and biopsy",
+          "confidence_level": "High (likely >80%)",
+          "additional_notes": "This is a preliminary assessment based on a single image. A definitive diagnosis requires clinical examination by a dermatologist."
         }
 
-        Focus your analysis on dermatological features:
+        Your analysis should focus on dermatological features:
         - ABCDE criteria for melanoma (Asymmetry, Border, Color, Diameter, Evolution)
         - Color variations and pigmentation patterns
         - Border regularity and definition
@@ -146,7 +147,7 @@ class SkinAnalysisViewModel: ObservableObject {
 
         Be specific about confidence levels using percentages when possible. Always include appropriate medical disclaimers about the need for professional diagnosis.
 
-        Respond with ONLY the JSON object, no additional text.
+        CRITICAL: Respond with ONLY the JSON object, no additional text before or after.
         """
     }
     
@@ -169,8 +170,21 @@ class SkinAnalysisViewModel: ObservableObject {
     // MARK: - JSON Parsing
     
     nonisolated private func parseJSONResponse(_ response: String) -> SkinAnalysisResult? {
+        print("🧠 [PARSER] Attempting JSON parsing...")
+        print("🧠 [PARSER] Original response preview: \(String(response.prefix(200)))...")
+        
         // Clean up the response to extract just the JSON part
         let cleanedResponse = extractJSONFromResponse(response)
+        
+        print("🧠 [PARSER] Cleaned response preview: \(String(cleanedResponse.prefix(200)))...")
+        print("🧠 [PARSER] Cleaned response length: \(cleanedResponse.count)")
+        
+        // Check if cleaned response actually looks like JSON
+        let trimmed = cleanedResponse.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.hasPrefix("{") && !trimmed.hasPrefix("[") {
+            print("🧠 [PARSER] Response doesn't start with JSON delimiter. First 50 chars: '\(String(trimmed.prefix(50)))'")
+            return nil
+        }
         
         guard let data = cleanedResponse.data(using: .utf8) else {
             print("🧠 [PARSER] Failed to convert response to data")
@@ -245,14 +259,46 @@ class SkinAnalysisViewModel: ObservableObject {
     }
     
     nonisolated private func extractJSONFromResponse(_ response: String) -> String {
-        // Look for JSON object boundaries
-        guard let startIndex = response.firstIndex(of: "{"),
-              let endIndex = response.lastIndex(of: "}") else {
-            return response
+        print("🧠 [PARSER] Extracting JSON from response...")
+        
+        // First, try to find a complete JSON object
+        var braceCount = 0
+        var startIndex: String.Index?
+        var endIndex: String.Index?
+        
+        for (index, char) in response.enumerated() {
+            let currentIndex = response.index(response.startIndex, offsetBy: index)
+            
+            if char == "{" {
+                if braceCount == 0 {
+                    startIndex = currentIndex
+                }
+                braceCount += 1
+            } else if char == "}" {
+                braceCount -= 1
+                if braceCount == 0 && startIndex != nil {
+                    endIndex = currentIndex
+                    break
+                }
+            }
         }
         
-        let jsonString = String(response[startIndex...endIndex])
-        return jsonString
+        if let start = startIndex, let end = endIndex {
+            let jsonString = String(response[start...end])
+            print("🧠 [PARSER] Found balanced JSON: \(jsonString.prefix(100))...")
+            return jsonString
+        }
+        
+        // Fallback: look for simple boundaries (original approach)
+        if let simpleStart = response.firstIndex(of: "{"),
+           let simpleEnd = response.lastIndex(of: "}") {
+            let jsonString = String(response[simpleStart...simpleEnd])
+            print("🧠 [PARSER] Using simple boundary extraction: \(jsonString.prefix(100))...")
+            return jsonString
+        }
+        
+        print("🧠 [PARSER] No JSON delimiters found, returning original response")
+        return response
     }
     
     nonisolated private func extractConfidenceFromString(_ confidenceLevel: String) -> Double {
