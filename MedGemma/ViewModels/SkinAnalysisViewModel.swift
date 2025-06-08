@@ -70,8 +70,26 @@ class SkinAnalysisViewModel: ObservableObject {
             )
             
             // Parse the response into structured result
-            print("Model response received: \(response)")
+            print("📱 [VIEWMODEL] Model response received:")
+            print(String(repeating: "=", count: 50))
+            print(response)
+            print(String(repeating: "=", count: 50))
+            
             analysisResult = parseAnalysisResponse(response)
+            
+            print("📱 [VIEWMODEL] Parsed analysis result:")
+            if let result = analysisResult {
+                print("   Conditions: \(result.conditions.count)")
+                for condition in result.conditions {
+                    print("   - \(condition.name): \(condition.confidence)")
+                }
+                print("   Recommendations: \(result.recommendations.count)")
+                for rec in result.recommendations {
+                    print("   - \(rec)")
+                }
+                print("   Urgency: \(result.urgencyLevel.rawValue)")
+                print("   Confidence: \(result.confidence)")
+            }
             
             // Save to history
             await saveAnalysisToHistory()
@@ -123,7 +141,9 @@ class SkinAnalysisViewModel: ObservableObject {
     
     private func parseAnalysisResponse(_ response: String) -> SkinAnalysisResult {
         // Parse the actual model response instead of returning hardcoded results
-        print("Parsing model response: \(response)")
+        print("🧠 [PARSER] Starting to parse model response...")
+        print("🧠 [PARSER] Response length: \(response.count) characters")
+        print("🧠 [PARSER] Response preview: \(String(response.prefix(100)))...")
         
         // Extract conditions from the response
         var conditions: [PotentialCondition] = []
@@ -193,13 +213,21 @@ class SkinAnalysisViewModel: ObservableObject {
             ]
         }
         
-        return SkinAnalysisResult(
+        let result = SkinAnalysisResult(
             conditions: conditions,
             recommendations: recommendations,
             urgencyLevel: urgencyLevel,
             confidence: confidence,
             timestamp: Date()
         )
+        
+        print("🧠 [PARSER] Parsing completed successfully:")
+        print("🧠 [PARSER] - Found \(conditions.count) conditions")
+        print("🧠 [PARSER] - Generated \(recommendations.count) recommendations")
+        print("🧠 [PARSER] - Urgency level: \(urgencyLevel.rawValue)")
+        print("🧠 [PARSER] - Overall confidence: \(confidence)")
+        
+        return result
     }
     
     private func saveAnalysisToHistory() async {

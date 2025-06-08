@@ -106,21 +106,40 @@ class ModelManager: ObservableObject {
         var fullPrompt = buildPrompt(from: prompt, context: context)
         
         do {
+            print("💬 [TEXT ANALYSIS] Starting with model...")
+            print("💬 [TEXT ANALYSIS] Input prompt: \(fullPrompt)")
+            
             // Prepare text-only input for the model
             let input = try prepareTextInput(prompt: fullPrompt)
+            print("💬 [TEXT ANALYSIS] Model input prepared successfully")
             
             // Run model inference
+            print("💬 [TEXT ANALYSIS] Running model prediction...")
             let prediction = try await model.prediction(from: input)
+            print("💬 [TEXT ANALYSIS] Model prediction completed")
             
             // Extract and process the output
             let responseText = try extractTextFromPrediction(prediction)
+            print("💬 [TEXT ANALYSIS] Response extracted successfully")
+            print("💬 [TEXT ANALYSIS] FINAL RESPONSE:")
+            print(String(repeating: "=", count: 60))
+            print(responseText)
+            print(String(repeating: "=", count: 60))
             
             return responseText
             
         } catch {
-            print("Text model inference failed: \(error)")
-            // Fallback response if model fails
-            return generateFallbackTextResponse(prompt: prompt)
+            print("❌ [TEXT ANALYSIS] Model inference failed: \(error)")
+            print("❌ [TEXT ANALYSIS] Error details: \(error.localizedDescription)")
+            print("❌ [TEXT ANALYSIS] Falling back to basic response")
+            
+            let fallbackResponse = generateFallbackTextResponse(prompt: prompt)
+            print("💬 [TEXT ANALYSIS] FALLBACK RESPONSE:")
+            print(String(repeating: "=", count: 60))
+            print(fallbackResponse)
+            print(String(repeating: "=", count: 60))
+            
+            return fallbackResponse
         }
     }
     
@@ -182,28 +201,40 @@ class ModelManager: ObservableObject {
         let fullPrompt = buildImageAnalysisPrompt(prompt: prompt)
         
         do {
-            print("Starting image analysis with model...")
+            print("🔬 [IMAGE ANALYSIS] Starting with model...")
+            print("🔬 [IMAGE ANALYSIS] Input prompt: \(fullPrompt)")
             
             // Prepare model input
             let input = try prepareModelInput(image: imageBuffer, prompt: fullPrompt)
-            print("Model input prepared successfully")
+            print("🔬 [IMAGE ANALYSIS] Model input prepared successfully")
             
             // Run model inference
-            print("Running model prediction...")
+            print("🔬 [IMAGE ANALYSIS] Running model prediction...")
             let prediction = try await model.prediction(from: input)
-            print("Model prediction completed")
+            print("🔬 [IMAGE ANALYSIS] Model prediction completed")
             
             // Extract and process the output
             let analysisResult = try extractAnalysisFromPrediction(prediction)
-            print("Analysis result extracted successfully")
+            print("🔬 [IMAGE ANALYSIS] Analysis result extracted successfully")
+            print("🔬 [IMAGE ANALYSIS] FINAL RESPONSE:")
+            print(String(repeating: "=", count: 60))
+            print(analysisResult)
+            print(String(repeating: "=", count: 60))
             
             return analysisResult
             
         } catch {
-            print("Model inference failed: \(error)")
-            print("Error details: \(error.localizedDescription)")
-            // Fallback to basic analysis if model fails
-            return generateFallbackAnalysis(prompt: prompt)
+            print("❌ [IMAGE ANALYSIS] Model inference failed: \(error)")
+            print("❌ [IMAGE ANALYSIS] Error details: \(error.localizedDescription)")
+            print("❌ [IMAGE ANALYSIS] Falling back to basic analysis")
+            
+            let fallbackResult = generateFallbackAnalysis(prompt: prompt)
+            print("🔬 [IMAGE ANALYSIS] FALLBACK RESPONSE:")
+            print(String(repeating: "=", count: 60))
+            print(fallbackResult)
+            print(String(repeating: "=", count: 60))
+            
+            return fallbackResult
         }
     }
     
@@ -271,13 +302,25 @@ class ModelManager: ObservableObject {
             throw ModelError.inferenceError("Failed to extract model output. Available features: \(availableFeatures)")
         }
         
-        print("Found model output with shape: \(logitsArray.shape)")
+        print("🔍 [OUTPUT EXTRACTION] Found model output with shape: \(logitsArray.shape)")
+        print("🔍 [OUTPUT EXTRACTION] Logits array dataType: \(logitsArray.dataType)")
+        print("🔍 [OUTPUT EXTRACTION] Logits array strides: \(logitsArray.strides)")
         
         // Convert logits to text (simplified approach)
         // In a real implementation, you'd need proper decoding with the model's vocabulary
         let decodedText = decodeLogitsToText(logitsArray)
+        print("🔍 [OUTPUT EXTRACTION] Raw decoded text:")
+        print(String(repeating: "-", count: 40))
+        print(decodedText)
+        print(String(repeating: "-", count: 40))
         
-        return formatModelOutput(decodedText)
+        let formattedOutput = formatModelOutput(decodedText)
+        print("🔍 [OUTPUT EXTRACTION] Formatted output:")
+        print(String(repeating: "-", count: 40))
+        print(formattedOutput)
+        print(String(repeating: "-", count: 40))
+        
+        return formattedOutput
     }
     
     private func decodeLogitsToText(_ logits: MLMultiArray) -> String {
