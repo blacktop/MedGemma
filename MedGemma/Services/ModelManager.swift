@@ -68,6 +68,14 @@ class ModelManager: ObservableObject {
                 print("Model description: \(modelDescription)")
                 print("Input features: \(modelDescription.inputDescriptionsByName.keys)")
                 print("Output features: \(modelDescription.outputDescriptionsByName.keys)")
+                
+                // Print detailed input requirements
+                for (name, description) in modelDescription.inputDescriptionsByName {
+                    print("Input '\(name)': \(description)")
+                }
+                for (name, description) in modelDescription.outputDescriptionsByName {
+                    print("Output '\(name)': \(description)")
+                }
             }
         } catch {
             print("Failed to load model: \(error)")
@@ -144,7 +152,14 @@ class ModelManager: ObservableObject {
             return true
         }
         
-        return tokens
+        // Add special tokens that language models typically expect
+        return ["<bos>"] + tokens + ["<eos>"]
+    }
+    
+    private func tokenToId(_ token: String) -> Int32 {
+        // Simple hash-based token ID generation (not ideal but works for testing)
+        // In production, you'd use the actual model's vocabulary
+        return Int32(abs(token.hashValue) % 32000) // Limit to reasonable vocab size
     }
     
     // Image Analysis
@@ -211,19 +226,27 @@ class ModelManager: ObservableObject {
     // MARK: - Model Input/Output Processing
     
     private func prepareModelInput(image: CVPixelBuffer, prompt: String) throws -> MLFeatureProvider {
-        // Try different input feature names that the model might expect
+        // For multimodal models, we likely need both pixel_values and input_ids
         var inputDict: [String: MLFeatureValue] = [:]
         
-        // Common image input names
-        inputDict["image"] = MLFeatureValue(pixelBuffer: image)
-        inputDict["input_image"] = MLFeatureValue(pixelBuffer: image)
+        // Add image input
         inputDict["pixel_values"] = MLFeatureValue(pixelBuffer: image)
         
-        // Common text input names  
-        inputDict["text"] = MLFeatureValue(string: prompt)
-        inputDict["text_input"] = MLFeatureValue(string: prompt)
-        inputDict["prompt"] = MLFeatureValue(string: prompt)
-        inputDict["input_text"] = MLFeatureValue(string: prompt)
+        // Tokenize the text prompt
+        let tokens = tokenize(prompt)
+        let inputIds = tokens.map { tokenToId($0) }
+        
+        // Create the MLMultiArray for input_ids
+        guard let inputIdsArray = try? MLMultiArray(shape: [1, NSNumber(value: inputIds.count)], dataType: .int32) else {
+            throw ModelError.inferenceError("Failed to create input_ids array for image analysis")
+        }
+        
+        // Fill the array with token IDs
+        for (index, tokenId) in inputIds.enumerated() {
+            inputIdsArray[index] = NSNumber(value: tokenId)
+        }
+        
+        inputDict["input_ids"] = MLFeatureValue(multiArray: inputIdsArray)
         
         let inputFeatures = try MLDictionaryFeatureProvider(dictionary: inputDict)
         
@@ -288,9 +311,25 @@ class ModelManager: ObservableObject {
     }
     
     private func prepareTextInput(prompt: String) throws -> MLFeatureProvider {
-        // Create text-only input for the model
+        // Tokenize the input text
+        let tokens = tokenize(prompt)
+        
+        // Convert tokens to input_ids (integers)
+        let inputIds = tokens.map { tokenToId($0) }
+        
+        // Create the MLMultiArray for input_ids
+        guard let inputIdsArray = try? MLMultiArray(shape: [1, NSNumber(value: inputIds.count)], dataType: .int32) else {
+            throw ModelError.inferenceError("Failed to create input_ids array")
+        }
+        
+        // Fill the array with token IDs
+        for (index, tokenId) in inputIds.enumerated() {
+            inputIdsArray[index] = NSNumber(value: tokenId)
+        }
+        
+        // Create input features
         let inputFeatures = try MLDictionaryFeatureProvider(dictionary: [
-            "text_input": MLFeatureValue(string: prompt)
+            "input_ids": MLFeatureValue(multiArray: inputIdsArray)
         ])
         
         return inputFeatures
