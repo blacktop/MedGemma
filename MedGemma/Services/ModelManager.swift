@@ -537,7 +537,9 @@ class ModelManager: ObservableObject {
         }
         
         // Generate comprehensive medical notes
-        let additionalNotes = """This is a preliminary assessment based on AI analysis of dermatological features. \(melanomaSuspicion ? "The ABCDE criteria suggest features concerning for melanoma. " : "")The presence of \(concerningFeatures.isEmpty ? "standard skin features" : concerningFeatures.joined(separator: ", ")) \(concerningFeatures.isEmpty ? "suggests routine monitoring may be appropriate" : "warrants professional dermatological evaluation"). A definitive diagnosis requires clinical examination by a qualified dermatologist. \(urgencyLevel == "URGENT" ? "Given the concerning features identified, immediate medical consultation is strongly recommended." : "")"""
+        let additionalNotes = """
+This is a preliminary assessment based on AI analysis of dermatological features. \(melanomaSuspicion ? "The ABCDE criteria suggest features concerning for melanoma. " : "")The presence of \(concerningFeatures.isEmpty ? "standard skin features" : concerningFeatures.joined(separator: ", ")) \(concerningFeatures.isEmpty ? "suggests routine monitoring may be appropriate" : "warrants professional dermatological evaluation"). A definitive diagnosis requires clinical examination by a qualified dermatologist. \(urgencyLevel == "URGENT" ? "Given the concerning features identified, immediate medical consultation is strongly recommended." : "")
+"""
         
         // Generate enhanced JSON response matching LM Studio quality
         let jsonResponse = """
