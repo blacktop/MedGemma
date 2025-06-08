@@ -57,7 +57,7 @@ class SkinAnalysisViewModel: ObservableObject {
         errorMessage = nil
         
         do {
-            // Prepare image for analysis
+            // Prepare image for analysis with memory management
             let preprocessedImage = preprocessImage(image)
             
             // Generate prompt for the model
@@ -75,6 +75,9 @@ class SkinAnalysisViewModel: ObservableObject {
             // Save to history
             await saveAnalysisToHistory()
             
+            // Clear processed image from memory
+            selectedImage = nil
+            
         } catch {
             errorMessage = "Failed to analyze image: \(error.localizedDescription)"
         }
@@ -83,13 +86,14 @@ class SkinAnalysisViewModel: ObservableObject {
     }
     
     private func preprocessImage(_ image: UIImage) -> UIImage {
-        // Resize image to optimal size for model
-        let targetSize = CGSize(width: 512, height: 512)
+        // Resize image to smaller size to reduce memory usage
+        let targetSize = CGSize(width: 224, height: 224) // Reduced from 512x512
         
-        UIGraphicsBeginImageContextWithOptions(targetSize, false, 1.0)
-        image.draw(in: CGRect(origin: .zero, size: targetSize))
-        let resizedImage = UIGraphicsGetImageFromCurrentImageContext()!
-        UIGraphicsEndImageContext()
+        // Use memory-efficient image resizing
+        let renderer = UIGraphicsImageRenderer(size: targetSize)
+        let resizedImage = renderer.image { _ in
+            image.draw(in: CGRect(origin: .zero, size: targetSize))
+        }
         
         return resizedImage
     }
@@ -154,8 +158,10 @@ class SkinAnalysisViewModel: ObservableObject {
     
     private func saveAnalysisToHistory() async {
         guard let modelContext = modelContext,
-              let result = analysisResult,
-              let imageData = selectedImage?.jpegData(compressionQuality: 0.8) else { return }
+              let result = analysisResult else { return }
+        
+        // Don't save the full image data to reduce memory usage
+        // Just save the analysis results
         
         // Create a conversation for this analysis
         let conversation = Conversation(title: "Skin Analysis - \(Date().formatted())")

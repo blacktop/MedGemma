@@ -13,35 +13,58 @@ class ModelManager: ObservableObject {
     
     private var model: MLModel?
     private let tokenizer = NLTokenizer(unit: .word)
+    private var isLoading = false
     
     private init() {
-        Task {
-            await loadModel()
-        }
+        // Don't auto-load model to prevent memory issues
+        // Load only when needed
     }
     
     func loadModel() async {
+        // Prevent multiple simultaneous loads
+        guard !isLoading && !isModelLoaded else { return }
+        
+        isLoading = true
+        
         do {
             // Check if model exists
             guard let modelURL = Bundle.main.url(forResource: "medgemma_4b_mobile", withExtension: "mlmodelc") else {
                 print("Model not found in bundle. Please add medgemma_4b_mobile.mlpackage to the project.")
+                isLoading = false
                 return
             }
             
-            // Load model
+            // Configure model for memory efficiency
             let config = MLModelConfiguration()
-            config.computeUnits = .cpuAndGPU
+            config.computeUnits = .cpuOnly // Use CPU only to reduce memory pressure
+            config.allowLowPrecisionAccumulationOnGPU = true
             
+            // Load model with memory optimization
             model = try MLModel(contentsOf: modelURL, configuration: config)
             isModelLoaded = true
             
-            print("Model loaded successfully")
+            print("Model loaded successfully with memory optimizations")
         } catch {
             print("Failed to load model: \(error)")
+            // Clear any partial state
+            model = nil
         }
+        
+        isLoading = false
+    }
+    
+    func unloadModel() {
+        model = nil
+        isModelLoaded = false
+        print("Model unloaded to free memory")
     }
     
     func generateResponse(for prompt: String, context: [Message]) async throws -> String {
+        // Lazy load model only when needed
+        if !isModelLoaded {
+            await loadModel()
+        }
+        
         guard let model = model else {
             throw ModelError.modelNotLoaded
         }
@@ -96,6 +119,11 @@ class ModelManager: ObservableObject {
     
     // Image Analysis
     func analyzeImage(image: UIImage, prompt: String) async throws -> String {
+        // Lazy load model only when needed
+        if !isModelLoaded {
+            await loadModel()
+        }
+        
         guard let model = model else {
             throw ModelError.modelNotLoaded
         }

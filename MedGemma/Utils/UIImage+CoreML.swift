@@ -4,51 +4,55 @@ import VideoToolbox
 
 extension UIImage {
     func toCVPixelBuffer() -> CVPixelBuffer? {
+        // Use smaller size to reduce memory usage
+        let targetSize = CGSize(width: 224, height: 224)
+        
         let attrs = [kCVPixelBufferCGImageCompatibilityKey: kCFBooleanTrue,
              kCVPixelBufferCGBitmapContextCompatibilityKey: kCFBooleanTrue] as CFDictionary
         
         var pixelBuffer: CVPixelBuffer?
         let status = CVPixelBufferCreate(kCFAllocatorDefault,
-                                       Int(self.size.width),
-                                       Int(self.size.height),
+                                       Int(targetSize.width),
+                                       Int(targetSize.height),
                                        kCVPixelFormatType_32ARGB,
                                        attrs,
                                        &pixelBuffer)
         
-        guard status == kCVReturnSuccess else {
+        guard status == kCVReturnSuccess, let buffer = pixelBuffer else {
             return nil
         }
         
-        CVPixelBufferLockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))
-        let pixelData = CVPixelBufferGetBaseAddress(pixelBuffer!)
+        CVPixelBufferLockBaseAddress(buffer, CVPixelBufferLockFlags(rawValue: 0))
+        defer { CVPixelBufferUnlockBaseAddress(buffer, CVPixelBufferLockFlags(rawValue: 0)) }
         
+        let pixelData = CVPixelBufferGetBaseAddress(buffer)
         let rgbColorSpace = CGColorSpaceCreateDeviceRGB()
-        let context = CGContext(data: pixelData,
-                              width: Int(self.size.width),
-                              height: Int(self.size.height),
-                              bitsPerComponent: 8,
-                              bytesPerRow: CVPixelBufferGetBytesPerRow(pixelBuffer!),
-                              space: rgbColorSpace,
-                              bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue)
         
-        context?.translateBy(x: 0, y: self.size.height)
-        context?.scaleBy(x: 1.0, y: -1.0)
+        guard let context = CGContext(data: pixelData,
+                                    width: Int(targetSize.width),
+                                    height: Int(targetSize.height),
+                                    bitsPerComponent: 8,
+                                    bytesPerRow: CVPixelBufferGetBytesPerRow(buffer),
+                                    space: rgbColorSpace,
+                                    bitmapInfo: CGImageAlphaInfo.noneSkipFirst.rawValue) else {
+            return nil
+        }
         
-        UIGraphicsPushContext(context!)
-        self.draw(in: CGRect(x: 0, y: 0, width: self.size.width, height: self.size.height))
-        UIGraphicsPopContext()
-        CVPixelBufferUnlockBaseAddress(pixelBuffer!, CVPixelBufferLockFlags(rawValue: 0))
+        context.translateBy(x: 0, y: targetSize.height)
+        context.scaleBy(x: 1.0, y: -1.0)
         
-        return pixelBuffer
+        // Draw resized image
+        context.draw(self.cgImage!, in: CGRect(origin: .zero, size: targetSize))
+        
+        return buffer
     }
     
     // Resize image to specific dimensions for model input
     func resized(to size: CGSize) -> UIImage {
-        UIGraphicsBeginImageContextWithOptions(size, false, 1.0)
-        defer { UIGraphicsEndImageContext() }
-        
-        self.draw(in: CGRect(origin: .zero, size: size))
-        return UIGraphicsGetImageFromCurrentImageContext() ?? self
+        let renderer = UIGraphicsImageRenderer(size: size)
+        return renderer.image { _ in
+            self.draw(in: CGRect(origin: .zero, size: size))
+        }
     }
     
     // Crop image to square aspect ratio
