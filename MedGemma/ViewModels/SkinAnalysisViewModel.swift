@@ -177,9 +177,23 @@ class SkinAnalysisViewModel: ObservableObject {
             if urgencyLevel.rawValue == "Low" { urgencyLevel = .high }
         }
         
-        // MEDIUM PRIORITY: Concerning patterns
-        if lowercaseResponse.contains("concerning") || lowercaseResponse.contains("notable") ||
-           lowercaseResponse.contains("prominent") || lowercaseResponse.contains("complex") {
+        // MEDIUM PRIORITY: Concerning patterns (but not if negated)
+        let concerningWords = ["concerning", "notable", "prominent", "complex"]
+        let hasConcerningFeatures = concerningWords.contains { word in
+            let wordOccurrences = lowercaseResponse.components(separatedBy: word)
+            if wordOccurrences.count > 1 {
+                // Check for negations before the word
+                let beforeWord = wordOccurrences[0]
+                let negations = ["no ", "not ", "without ", "lacking ", "absent"]
+                let isNegated = negations.contains { negation in
+                    beforeWord.hasSuffix(negation.trimmingCharacters(in: .whitespaces))
+                }
+                return !isNegated
+            }
+            return false
+        }
+        
+        if hasConcerningFeatures {
             conditions.append(PotentialCondition(
                 name: "Concerning Features",
                 description: "Notable characteristics detected that warrant professional review",

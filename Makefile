@@ -11,7 +11,9 @@ help:
 	@echo "  build-with-model   - Convert model then build app"
 	@echo "  all                - Full pipeline: setup + model + build"
 	@echo "  clean-model        - Remove converted model files"
-	@echo "  test               - Run all tests"
+	@echo "  test               - Run quick Python parsing tests"
+	@echo "  test-ios           - Run full iOS unit tests"
+	@echo "  test-melanoma      - Test melanoma detection specifically"
 	@echo "  lint               - Run code linters"
 	@echo ""
 	@echo "Quick start:"
@@ -58,12 +60,10 @@ build-app:
 		build
 	@echo "✅ Build complete"
 
-# Run tests
+# Run tests (Python parsing tests)
 test:
-	@echo "Running tests..."
-	xcodebuild test -project MedGemma.xcodeproj \
-		-scheme MedGemma \
-		-destination 'platform=iOS Simulator,name=iPhone 16 Pro'
+	@echo "Running quick Python parsing tests..."
+	python3 test_parsing.py
 	@echo "✅ Tests complete"
 
 # Run linters
@@ -86,10 +86,10 @@ all: setup convert-model build-app
 # Quick build (app only, warns if no model)
 build: build-app
 
-# Run unit tests
-test: 
+# Run unit tests  
+test-ios:
 	@echo "Running MedGemma unit tests..."
-	cd MedGemma && xcodebuild test -scheme MedGemma -destination 'platform=iOS Simulator,name=iPhone 15 Pro'
+	xcodebuild test -project MedGemma.xcodeproj -scheme MedGemma -destination 'platform=iOS Simulator,name=iPhone 15 Pro'
 	@echo "✅ Tests completed"
 
 # Run quick parser tests without full build
@@ -102,5 +102,5 @@ test-quick:
 test-melanoma:
 	@echo "Testing melanoma detection..."
 	@echo "This will test the Wikipedia melanoma image analysis"
-	cd MedGemma && xcodebuild test -scheme MedGemma -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -only-testing:MedGemmaTests/ModelManagerTests/testMelanomaImageAnalysis
+	xcodebuild test -project MedGemma.xcodeproj -scheme MedGemma -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -only-testing:MedGemmaTests/ModelManagerTests/testMelanomaImageAnalysis
 	@echo "✅ Melanoma test completed"
