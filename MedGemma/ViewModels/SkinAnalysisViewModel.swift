@@ -139,7 +139,7 @@ class SkinAnalysisViewModel: ObservableObject {
         """
     }
     
-    func parseAnalysisResponse(_ response: String) -> SkinAnalysisResult {
+    nonisolated func parseAnalysisResponse(_ response: String) -> SkinAnalysisResult {
         // Parse the actual model response instead of returning hardcoded results
         print("🧠 [PARSER] Starting to parse model response...")
         print("🧠 [PARSER] Response length: \(response.count) characters")
@@ -346,5 +346,13 @@ class SkinAnalysisViewModel: ObservableObject {
         message += "\n⚠️ Remember: This analysis is for informational purposes only. Please consult a healthcare professional for proper diagnosis and treatment."
         
         return message
+    }
+}
+
+// MARK: - Testing Extensions
+extension SkinAnalysisViewModel {
+    // Expose internal methods for testing
+    nonisolated func testParseAnalysisResponse(_ response: String) -> SkinAnalysisResult {
+        return parseAnalysisResponse(response)
     }
 }

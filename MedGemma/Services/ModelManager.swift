@@ -327,7 +327,7 @@ class ModelManager: ObservableObject {
         return formattedOutput
     }
     
-    func decodeLogitsToText(_ logits: MLMultiArray) -> String {
+    nonisolated func decodeLogitsToText(_ logits: MLMultiArray) -> String {
         print("🔍 [LOGITS DECODER] Attempting to decode logits with shape: \(logits.shape)")
         
         // The model outputs logits with shape [1, 512, 256000]
@@ -380,7 +380,7 @@ class ModelManager: ObservableObject {
         return cleanUpDecodedText(decodedText)
     }
     
-    private func decodeToken(_ tokenId: Int) -> String {
+    nonisolated private func decodeToken(_ tokenId: Int) -> String {
         // Simple token ID to text mapping (in production, use actual model vocabulary)
         // This is a simplified approach for common medical/dermatology terms
         let medicalVocab: [Int: String] = [
@@ -401,7 +401,7 @@ class ModelManager: ObservableObject {
         return medicalVocab[tokenId] ?? ""
     }
     
-    func generateAnalyticalFallback(from logits: MLMultiArray) -> String {
+    nonisolated func generateAnalyticalFallback(from logits: MLMultiArray) -> String {
         // Analyze the logits to provide more specific medical insights
         // Look at the distribution patterns to infer characteristics
         
@@ -464,7 +464,7 @@ class ModelManager: ObservableObject {
         """
     }
     
-    private func cleanUpDecodedText(_ text: String) -> String {
+    nonisolated private func cleanUpDecodedText(_ text: String) -> String {
         // Clean up the decoded text and structure it medically
         var cleaned = text.replacingOccurrences(of: "  ", with: " ")
         cleaned = cleaned.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -573,6 +573,18 @@ class ModelManager: ObservableObject {
         
         ⚠️ **Important:** This is not a substitute for professional medical advice. Always consult healthcare providers for proper diagnosis and treatment.
         """
+    }
+}
+
+// MARK: - Testing Extensions
+extension ModelManager {
+    // Expose internal methods for testing
+    nonisolated func testDecodeLogitsToText(_ logits: MLMultiArray) -> String {
+        return decodeLogitsToText(logits)
+    }
+    
+    nonisolated func testGenerateAnalyticalFallback(from logits: MLMultiArray) -> String {
+        return generateAnalyticalFallback(from: logits)
     }
 }
 

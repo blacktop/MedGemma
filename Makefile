@@ -89,7 +89,7 @@ build: build-app
 # Run unit tests  
 test-ios:
 	@echo "Running MedGemma unit tests..."
-	xcodebuild test -project MedGemma.xcodeproj -scheme MedGemma -destination 'platform=iOS Simulator,name=iPhone 15 Pro'
+	xcodebuild test -project MedGemma.xcodeproj -scheme MedGemma -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5'
 	@echo "✅ Tests completed"
 
 # Run quick parser tests without full build
@@ -102,5 +102,5 @@ test-quick:
 test-melanoma:
 	@echo "Testing melanoma detection..."
 	@echo "This will test the Wikipedia melanoma image analysis"
-	xcodebuild test -project MedGemma.xcodeproj -scheme MedGemma -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -only-testing:MedGemmaTests/ModelManagerTests/testMelanomaImageAnalysis
+	xcodebuild test -project MedGemma.xcodeproj -scheme MedGemma -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=18.5' -only-testing:MedGemmaTests/ModelManagerTests/testMelanomaImageAnalysis
 	@echo "✅ Melanoma test completed"

@@ -94,8 +94,8 @@ class ModelManagerTests: XCTestCase {
     
     // MARK: - Parser Tests
     
-    func testSkinAnalysisViewModelParsing() throws {
-        let viewModel = SkinAnalysisViewModel()
+    func testSkinAnalysisViewModelParsing() async throws {
+        let viewModel = await SkinAnalysisViewModel()
         
         // Test melanoma response parsing
         let melanomaResponse = """
@@ -139,8 +139,8 @@ class ModelManagerTests: XCTestCase {
         XCTAssertTrue(hasUrgentRecommendation, "Should include urgent recommendations")
     }
     
-    func testBenignLesionParsing() throws {
-        let viewModel = SkinAnalysisViewModel()
+    func testBenignLesionParsing() async throws {
+        let viewModel = await SkinAnalysisViewModel()
         
         // Test benign response parsing
         let benignResponse = """
