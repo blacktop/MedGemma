@@ -139,7 +139,7 @@ class SkinAnalysisViewModel: ObservableObject {
         """
     }
     
-    private func parseAnalysisResponse(_ response: String) -> SkinAnalysisResult {
+    func parseAnalysisResponse(_ response: String) -> SkinAnalysisResult {
         // Parse the actual model response instead of returning hardcoded results
         print("🧠 [PARSER] Starting to parse model response...")
         print("🧠 [PARSER] Response length: \(response.count) characters")

@@ -85,3 +85,22 @@ all: setup convert-model build-app
 
 # Quick build (app only, warns if no model)
 build: build-app
+
+# Run unit tests
+test: 
+	@echo "Running MedGemma unit tests..."
+	cd MedGemma && xcodebuild test -scheme MedGemma -destination 'platform=iOS Simulator,name=iPhone 15 Pro'
+	@echo "✅ Tests completed"
+
+# Run quick parser tests without full build
+test-quick:
+	@echo "Running quick parser tests..."
+	@swift MedGemma/Tests/TestRunner.swift --run-tests
+	@echo "✅ Quick tests completed"
+
+# Test melanoma detection specifically
+test-melanoma:
+	@echo "Testing melanoma detection..."
+	@echo "This will test the Wikipedia melanoma image analysis"
+	cd MedGemma && xcodebuild test -scheme MedGemma -destination 'platform=iOS Simulator,name=iPhone 15 Pro' -only-testing:MedGemmaTests/ModelManagerTests/testMelanomaImageAnalysis
+	@echo "✅ Melanoma test completed"

@@ -327,7 +327,7 @@ class ModelManager: ObservableObject {
         return formattedOutput
     }
     
-    private func decodeLogitsToText(_ logits: MLMultiArray) -> String {
+    func decodeLogitsToText(_ logits: MLMultiArray) -> String {
         print("🔍 [LOGITS DECODER] Attempting to decode logits with shape: \(logits.shape)")
         
         // The model outputs logits with shape [1, 512, 256000]
@@ -401,7 +401,7 @@ class ModelManager: ObservableObject {
         return medicalVocab[tokenId] ?? ""
     }
     
-    private func generateAnalyticalFallback(from logits: MLMultiArray) -> String {
+    func generateAnalyticalFallback(from logits: MLMultiArray) -> String {
         // Analyze the logits to provide more specific medical insights
         // Look at the distribution patterns to infer characteristics
         
