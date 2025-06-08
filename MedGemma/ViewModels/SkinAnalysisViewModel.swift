@@ -119,168 +119,66 @@ class SkinAnalysisViewModel: ObservableObject {
     
     private func generateAnalysisPrompt() -> String {
         """
-        Analyze this dermatological image and provide:
-        1. List of potential skin conditions (with confidence levels)
-        2. Brief description of each condition
-        3. Recommended actions for the patient
-        4. Urgency level (Low/Medium/High/Urgent)
-        
-        Focus on common conditions like:
-        - Acne
-        - Eczema
-        - Psoriasis
-        - Melanoma
-        - Basal cell carcinoma
-        - Benign moles
-        - Rashes
-        - Allergic reactions
-        
-        Important: This is for educational purposes only. Always recommend consulting a healthcare professional.
+        Analyze this dermatological image and provide your assessment:
+
+        1. What skin condition do you think this lesion represents?
+        2. Explain your reasoning using dermatological criteria (color, border, size, elevation, etc.)
+        3. Provide a percentage of certainty for your diagnosis (e.g., "80% likely to be melanoma")
+        4. List important considerations and next steps
+        5. Include appropriate medical disclaimers
+
+        Focus on key dermatological features like:
+        - ABCDE criteria for melanoma (Asymmetry, Border, Color, Diameter, Evolution)
+        - Color variations and patterns
+        - Border irregularities
+        - Size and elevation
+        - Any concerning characteristics
+
+        Please be specific about your confidence level as a percentage and explain what the patient should do next.
+
+        Important: This is for educational purposes only. Always recommend consulting a healthcare professional for proper diagnosis.
         """
     }
     
     nonisolated func parseAnalysisResponse(_ response: String) -> SkinAnalysisResult {
-        // Parse the actual model response instead of returning hardcoded results
-        print("🧠 [PARSER] Starting to parse model response...")
+        print("🧠 [PARSER] Starting to parse natural language model response...")
         print("🧠 [PARSER] Response length: \(response.count) characters")
-        print("🧠 [PARSER] Response preview: \(String(response.prefix(100)))...")
+        print("🧠 [PARSER] Full response: \(response)")
         
-        // Extract conditions from the response
         var conditions: [PotentialCondition] = []
         var recommendations: [String] = []
         var urgencyLevel: UrgencyLevel = .low
-        var confidence: Double = 0.8
+        var confidence: Double = 0.75
         
-        // Parse response text for medical insights
         let lowercaseResponse = response.lowercased()
         
-        // Extract potential conditions based on medical keywords
+        // Extract percentage confidence from response
+        confidence = extractConfidencePercentage(from: response)
         
-        // HIGH PRIORITY: Melanoma and malignant indicators
-        if lowercaseResponse.contains("melanoma") || lowercaseResponse.contains("malignant") {
+        // Identify primary diagnosis from the response
+        let primaryDiagnosis = extractPrimaryDiagnosis(from: response)
+        
+        // Determine urgency based on diagnosis and language
+        urgencyLevel = determineUrgencyLevel(from: response, diagnosis: primaryDiagnosis)
+        
+        // Create main condition based on diagnosis
+        if !primaryDiagnosis.isEmpty {
             conditions.append(PotentialCondition(
-                name: "Possible Melanoma",
-                description: "Suspicious pigmented lesion with concerning features",
-                confidence: 0.9
+                name: primaryDiagnosis,
+                description: extractReasoningFromResponse(response),
+                confidence: confidence
             ))
-            urgencyLevel = .urgent
-        }
-        
-        // HIGH PRIORITY: ABCDE criteria and concerning features
-        if lowercaseResponse.contains("asymmet") || lowercaseResponse.contains("irregular") || 
-           lowercaseResponse.contains("variegated") || lowercaseResponse.contains("suspicious") {
+        } else {
+            // Fallback general condition
             conditions.append(PotentialCondition(
-                name: "Irregular/Asymmetric Features",
-                description: "Lesion shows asymmetrical or irregular characteristics requiring evaluation",
-                confidence: 0.85
-            ))
-            if urgencyLevel.rawValue == "Low" { urgencyLevel = .high }
-        }
-        
-        // MEDIUM PRIORITY: Concerning patterns (but not if negated)
-        let concerningWords = ["concerning", "notable", "prominent", "complex"]
-        let hasConcerningFeatures = concerningWords.contains { word in
-            let wordOccurrences = lowercaseResponse.components(separatedBy: word)
-            if wordOccurrences.count > 1 {
-                // Check for negations before the word
-                let beforeWord = wordOccurrences[0]
-                let negations = ["no ", "not ", "without ", "lacking ", "absent"]
-                let isNegated = negations.contains { negation in
-                    beforeWord.hasSuffix(negation.trimmingCharacters(in: .whitespaces))
-                }
-                return !isNegated
-            }
-            return false
-        }
-        
-        if hasConcerningFeatures {
-            conditions.append(PotentialCondition(
-                name: "Concerning Features",
-                description: "Notable characteristics detected that warrant professional review",
-                confidence: 0.75
-            ))
-            if urgencyLevel.rawValue == "Low" { urgencyLevel = .medium }
-        }
-        
-        // STANDARD: Basic mole/nevus
-        if lowercaseResponse.contains("mole") || lowercaseResponse.contains("nevus") {
-            if !conditions.contains(where: { $0.name.contains("Melanoma") || $0.name.contains("Irregular") }) {
-                conditions.append(PotentialCondition(
-                    name: "Pigmented Lesion/Mole",
-                    description: "Pigmented skin lesion requiring monitoring",
-                    confidence: 0.7
-                ))
-            }
-        }
-        
-        // Inflammatory conditions
-        if lowercaseResponse.contains("inflammation") || lowercaseResponse.contains("red") {
-            conditions.append(PotentialCondition(
-                name: "Inflammatory Changes",
-                description: "Signs of skin inflammation detected",
-                confidence: 0.6
+                name: "Skin Lesion Assessment",
+                description: "Dermatological analysis completed - professional evaluation recommended",
+                confidence: confidence
             ))
         }
         
-        // Emergency indicators
-        if lowercaseResponse.contains("urgent") || lowercaseResponse.contains("immediate") ||
-           lowercaseResponse.contains("emergency") {
-            urgencyLevel = .urgent
-        }
-        
-        // If no specific conditions detected, create a general assessment
-        if conditions.isEmpty {
-            conditions.append(PotentialCondition(
-                name: "General Assessment",
-                description: "AI analysis completed - requires professional interpretation",
-                confidence: 0.75
-            ))
-        }
-        
-        // Generate recommendations based on urgency level and detected conditions
-        switch urgencyLevel {
-        case .urgent:
-            recommendations = [
-                "⚠️ URGENT: Seek immediate dermatological evaluation",
-                "Schedule appointment within 24-48 hours",
-                "Consider emergency consultation if rapid changes observed",
-                "Document lesion with high-resolution photos",
-                "Avoid sun exposure to the area"
-            ]
-        case .high:
-            recommendations = [
-                "Schedule dermatological consultation within 1-2 weeks",
-                "Monitor closely for any changes in size, color, or shape",
-                "Apply ABCDE criteria (Asymmetry, Border, Color, Diameter, Evolution)",
-                "Document with photos for comparison",
-                "Use broad-spectrum sunscreen SPF 30+"
-            ]
-        case .medium:
-            recommendations = [
-                "Consider dermatological evaluation within 1 month",
-                "Monitor for changes and document with photos",
-                "Apply sun protection measures",
-                "Track any evolution in appearance",
-                "Follow up if concerned about changes"
-            ]
-        case .low:
-            recommendations = [
-                "Routine skin monitoring recommended",
-                "Annual dermatological check-up",
-                "Use sun protection (SPF 30+) daily",
-                "Self-examine monthly for changes",
-                "Document with photos for future comparison"
-            ]
-        }
-        
-        // Add specific recommendations based on detected features
-        if lowercaseResponse.contains("biopsy") || lowercaseResponse.contains("melanoma") {
-            recommendations.insert("Discuss biopsy options with dermatologist", at: 1)
-        }
-        
-        if lowercaseResponse.contains("irregular") || lowercaseResponse.contains("asymmet") {
-            recommendations.append("Pay special attention to border irregularities")
-        }
+        // Extract recommendations from the response
+        recommendations = extractRecommendationsFromResponse(response, urgency: urgencyLevel)
         
         let result = SkinAnalysisResult(
             conditions: conditions,
@@ -290,13 +188,234 @@ class SkinAnalysisViewModel: ObservableObject {
             timestamp: Date()
         )
         
-        print("🧠 [PARSER] Parsing completed successfully:")
-        print("🧠 [PARSER] - Found \(conditions.count) conditions")
-        print("🧠 [PARSER] - Generated \(recommendations.count) recommendations")
-        print("🧠 [PARSER] - Urgency level: \(urgencyLevel.rawValue)")
-        print("🧠 [PARSER] - Overall confidence: \(confidence)")
+        print("🧠 [PARSER] Natural language parsing completed:")
+        print("🧠 [PARSER] - Primary diagnosis: \(primaryDiagnosis)")
+        print("🧠 [PARSER] - Confidence: \(Int(confidence * 100))%")
+        print("🧠 [PARSER] - Urgency: \(urgencyLevel.rawValue)")
+        print("🧠 [PARSER] - Recommendations: \(recommendations.count)")
         
         return result
+    }
+    
+    // MARK: - Natural Language Parsing Helpers
+    
+    nonisolated private func extractConfidencePercentage(from response: String) -> Double {
+        // Look for percentage patterns like "80%", ">80%", "likely 80%", etc.
+        let percentagePatterns = [
+            #"(\d+)%"#,  // "80%"
+            #">(\d+)%"#, // ">80%"
+            #"(\d+)% likely"#, // "80% likely"
+            #"likely.*?(\d+)%"#, // "likely to be 80%"
+            #"certainty.*?(\d+)%"#, // "certainty of 80%"
+            #"confidence.*?(\d+)%"#  // "confidence level of 80%"
+        ]
+        
+        for pattern in percentagePatterns {
+            if let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
+               let match = regex.firstMatch(in: response, options: [], range: NSRange(location: 0, length: response.count)),
+               let range = Range(match.range(at: 1), in: response),
+               let percentage = Double(String(response[range])) {
+                print("🧠 [PARSER] Found confidence percentage: \(percentage)%")
+                return percentage / 100.0
+            }
+        }
+        
+        // If no percentage found, infer from language
+        let lowercaseResponse = response.lowercased()
+        if lowercaseResponse.contains("highly likely") || lowercaseResponse.contains("very likely") {
+            return 0.85
+        } else if lowercaseResponse.contains("likely") || lowercaseResponse.contains("appears to be") {
+            return 0.75
+        } else if lowercaseResponse.contains("possible") || lowercaseResponse.contains("might be") {
+            return 0.65
+        } else if lowercaseResponse.contains("unlikely") {
+            return 0.3
+        }
+        
+        return 0.75 // Default confidence
+    }
+    
+    nonisolated private func extractPrimaryDiagnosis(from response: String) -> String {
+        let lowercaseResponse = response.lowercased()
+        
+        // Check for specific conditions mentioned
+        if lowercaseResponse.contains("melanoma") {
+            return "Melanoma"
+        } else if lowercaseResponse.contains("basal cell carcinoma") || lowercaseResponse.contains("basal cell") {
+            return "Basal Cell Carcinoma"
+        } else if lowercaseResponse.contains("squamous cell carcinoma") || lowercaseResponse.contains("squamous cell") {
+            return "Squamous Cell Carcinoma"
+        } else if lowercaseResponse.contains("seborrheic keratosis") {
+            return "Seborrheic Keratosis"
+        } else if lowercaseResponse.contains("actinic keratosis") {
+            return "Actinic Keratosis"
+        } else if lowercaseResponse.contains("benign") && lowercaseResponse.contains("mole") {
+            return "Benign Mole"
+        } else if lowercaseResponse.contains("mole") || lowercaseResponse.contains("nevus") {
+            return "Pigmented Lesion (Mole)"
+        } else if lowercaseResponse.contains("lesion") {
+            return "Skin Lesion"
+        }
+        
+        return "Dermatological Finding"
+    }
+    
+    nonisolated private func determineUrgencyLevel(from response: String, diagnosis: String) -> UrgencyLevel {
+        let lowercaseResponse = response.lowercased()
+        
+        // Urgent indicators
+        if lowercaseResponse.contains("immediately") || 
+           lowercaseResponse.contains("urgent") ||
+           lowercaseResponse.contains("emergency") ||
+           diagnosis.contains("Melanoma") ||
+           lowercaseResponse.contains("cancerous") ||
+           lowercaseResponse.contains("malignant") {
+            return .urgent
+        }
+        
+        // High priority indicators
+        if lowercaseResponse.contains("concerning") ||
+           lowercaseResponse.contains("suspicious") ||
+           lowercaseResponse.contains("irregular") ||
+           lowercaseResponse.contains("asymmetric") ||
+           diagnosis.contains("Carcinoma") ||
+           lowercaseResponse.contains("biopsy") {
+            return .high
+        }
+        
+        // Medium priority
+        if lowercaseResponse.contains("monitor") ||
+           lowercaseResponse.contains("follow up") ||
+           lowercaseResponse.contains("track changes") ||
+           diagnosis.contains("Keratosis") {
+            return .medium
+        }
+        
+        // Low priority for benign findings
+        if lowercaseResponse.contains("benign") ||
+           lowercaseResponse.contains("routine") ||
+           diagnosis.contains("Benign") {
+            return .low
+        }
+        
+        // Default to medium for unknown conditions
+        return .medium
+    }
+    
+    nonisolated private func extractReasoningFromResponse(_ response: String) -> String {
+        // Extract the reasoning section (usually after "Here's why:" or similar)
+        let lines = response.components(separatedBy: .newlines)
+        var reasoningLines: [String] = []
+        var inReasoningSection = false
+        
+        for line in lines {
+            let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+            
+            // Start collecting after reasoning indicators
+            if trimmedLine.lowercased().contains("here's why") ||
+               trimmedLine.lowercased().contains("reasoning") ||
+               trimmedLine.lowercased().contains("because") {
+                inReasoningSection = true
+                continue
+            }
+            
+            // Stop at certain sections
+            if trimmedLine.lowercased().contains("important considerations") ||
+               trimmedLine.lowercased().contains("what you should do") ||
+               trimmedLine.lowercased().contains("disclaimer") ||
+               trimmedLine.lowercased().contains("regarding the certainty") {
+                break
+            }
+            
+            // Collect reasoning lines
+            if inReasoningSection && !trimmedLine.isEmpty {
+                reasoningLines.append(trimmedLine)
+            }
+        }
+        
+        let reasoning = reasoningLines.joined(separator: " ").trimmingCharacters(in: .whitespaces)
+        return reasoning.isEmpty ? "AI analysis based on visual assessment of dermatological features" : reasoning
+    }
+    
+    nonisolated private func extractRecommendationsFromResponse(_ response: String, urgency: UrgencyLevel) -> [String] {
+        var recommendations: [String] = []
+        
+        // Extract specific recommendations from the response
+        let lines = response.components(separatedBy: .newlines)
+        var inRecommendationSection = false
+        
+        for line in lines {
+            let trimmedLine = line.trimmingCharacters(in: .whitespaces)
+            
+            // Look for recommendation sections
+            if trimmedLine.lowercased().contains("what you should do") ||
+               trimmedLine.lowercased().contains("recommendations") ||
+               trimmedLine.lowercased().contains("next steps") ||
+               trimmedLine.lowercased().contains("important considerations") {
+                inRecommendationSection = true
+                continue
+            }
+            
+            // Stop at disclaimer
+            if trimmedLine.lowercased().contains("disclaimer") {
+                break
+            }
+            
+            // Collect bullet points and numbered items
+            if inRecommendationSection && !trimmedLine.isEmpty {
+                if trimmedLine.contains("•") || trimmedLine.contains("-") || 
+                   trimmedLine.matches("^\\d+\\.") || trimmedLine.contains(":") {
+                    let cleanedLine = trimmedLine
+                        .replacingOccurrences(of: "•", with: "")
+                        .replacingOccurrences(of: "-", with: "")
+                        .replacingOccurrences(of: #"^\d+\.\s*"#, with: "", options: .regularExpression)
+                        .trimmingCharacters(in: .whitespaces)
+                    
+                    if !cleanedLine.isEmpty {
+                        recommendations.append(cleanedLine)
+                    }
+                }
+            }
+        }
+        
+        // Add default recommendations based on urgency if none found
+        if recommendations.isEmpty {
+            switch urgency {
+            case .urgent:
+                recommendations = [
+                    "🚨 Schedule dermatologist appointment IMMEDIATELY",
+                    "Seek evaluation within 24-48 hours",
+                    "Document any changes with photos",
+                    "Avoid sun exposure to the area"
+                ]
+            case .high:
+                recommendations = [
+                    "Schedule dermatologist appointment within 1-2 weeks",
+                    "Monitor for any changes in size, color, or shape",
+                    "Take photos for comparison",
+                    "Use broad-spectrum sunscreen SPF 30+"
+                ]
+            case .medium:
+                recommendations = [
+                    "Consider dermatologist evaluation within 1 month",
+                    "Monitor for changes and document with photos",
+                    "Apply sun protection measures",
+                    "Follow up if appearance changes"
+                ]
+            case .low:
+                recommendations = [
+                    "Routine monitoring recommended",
+                    "Annual dermatological check-up",
+                    "Daily sun protection (SPF 30+)",
+                    "Monthly self-examination"
+                ]
+            }
+        }
+        
+        // Always add medical disclaimer
+        recommendations.append("⚠️ This is AI analysis only - consult a dermatologist for proper diagnosis")
+        
+        return recommendations
     }
     
     private func saveAnalysisToHistory() async {
@@ -346,6 +465,13 @@ class SkinAnalysisViewModel: ObservableObject {
         message += "\n⚠️ Remember: This analysis is for informational purposes only. Please consult a healthcare professional for proper diagnosis and treatment."
         
         return message
+    }
+}
+
+// MARK: - String Extensions
+extension String {
+    func matches(_ pattern: String) -> Bool {
+        return range(of: pattern, options: .regularExpression) != nil
     }
 }
 
