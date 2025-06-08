@@ -155,14 +155,51 @@ class SkinAnalysisViewModel: ObservableObject {
         let lowercaseResponse = response.lowercased()
         
         // Extract potential conditions based on medical keywords
-        if lowercaseResponse.contains("mole") || lowercaseResponse.contains("nevus") {
+        
+        // HIGH PRIORITY: Melanoma and malignant indicators
+        if lowercaseResponse.contains("melanoma") || lowercaseResponse.contains("malignant") {
             conditions.append(PotentialCondition(
-                name: "Possible Nevus/Mole",
-                description: "Pigmented lesion requiring evaluation",
-                confidence: 0.7
+                name: "Possible Melanoma",
+                description: "Suspicious pigmented lesion with concerning features",
+                confidence: 0.9
             ))
+            urgencyLevel = .urgent
         }
         
+        // HIGH PRIORITY: ABCDE criteria and concerning features
+        if lowercaseResponse.contains("asymmet") || lowercaseResponse.contains("irregular") || 
+           lowercaseResponse.contains("variegated") || lowercaseResponse.contains("suspicious") {
+            conditions.append(PotentialCondition(
+                name: "Irregular/Asymmetric Features",
+                description: "Lesion shows asymmetrical or irregular characteristics requiring evaluation",
+                confidence: 0.85
+            ))
+            if urgencyLevel.rawValue == "Low" { urgencyLevel = .high }
+        }
+        
+        // MEDIUM PRIORITY: Concerning patterns
+        if lowercaseResponse.contains("concerning") || lowercaseResponse.contains("notable") ||
+           lowercaseResponse.contains("prominent") || lowercaseResponse.contains("complex") {
+            conditions.append(PotentialCondition(
+                name: "Concerning Features",
+                description: "Notable characteristics detected that warrant professional review",
+                confidence: 0.75
+            ))
+            if urgencyLevel.rawValue == "Low" { urgencyLevel = .medium }
+        }
+        
+        // STANDARD: Basic mole/nevus
+        if lowercaseResponse.contains("mole") || lowercaseResponse.contains("nevus") {
+            if !conditions.contains(where: { $0.name.contains("Melanoma") || $0.name.contains("Irregular") }) {
+                conditions.append(PotentialCondition(
+                    name: "Pigmented Lesion/Mole",
+                    description: "Pigmented skin lesion requiring monitoring",
+                    confidence: 0.7
+                ))
+            }
+        }
+        
+        // Inflammatory conditions
         if lowercaseResponse.contains("inflammation") || lowercaseResponse.contains("red") {
             conditions.append(PotentialCondition(
                 name: "Inflammatory Changes",
@@ -171,17 +208,10 @@ class SkinAnalysisViewModel: ObservableObject {
             ))
         }
         
-        if lowercaseResponse.contains("irregular") || lowercaseResponse.contains("asymmet") {
-            conditions.append(PotentialCondition(
-                name: "Irregular Features",
-                description: "Asymmetrical or irregular characteristics observed",
-                confidence: 0.8
-            ))
-            urgencyLevel = .medium
-        }
-        
-        if lowercaseResponse.contains("concerning") || lowercaseResponse.contains("urgent") {
-            urgencyLevel = .high
+        // Emergency indicators
+        if lowercaseResponse.contains("urgent") || lowercaseResponse.contains("immediate") ||
+           lowercaseResponse.contains("emergency") {
+            urgencyLevel = .urgent
         }
         
         // If no specific conditions detected, create a general assessment
@@ -193,24 +223,49 @@ class SkinAnalysisViewModel: ObservableObject {
             ))
         }
         
-        // Extract recommendations from response or provide defaults
-        if lowercaseResponse.contains("consult") || lowercaseResponse.contains("professional") {
-            recommendations.append("Consult with a healthcare professional")
-        }
-        if lowercaseResponse.contains("monitor") || lowercaseResponse.contains("track") {
-            recommendations.append("Monitor for changes over time")
-        }
-        if lowercaseResponse.contains("sun") || lowercaseResponse.contains("protection") {
-            recommendations.append("Use sun protection (SPF 30+)")
+        // Generate recommendations based on urgency level and detected conditions
+        switch urgencyLevel {
+        case .urgent:
+            recommendations = [
+                "⚠️ URGENT: Seek immediate dermatological evaluation",
+                "Schedule appointment within 24-48 hours",
+                "Consider emergency consultation if rapid changes observed",
+                "Document lesion with high-resolution photos",
+                "Avoid sun exposure to the area"
+            ]
+        case .high:
+            recommendations = [
+                "Schedule dermatological consultation within 1-2 weeks",
+                "Monitor closely for any changes in size, color, or shape",
+                "Apply ABCDE criteria (Asymmetry, Border, Color, Diameter, Evolution)",
+                "Document with photos for comparison",
+                "Use broad-spectrum sunscreen SPF 30+"
+            ]
+        case .medium:
+            recommendations = [
+                "Consider dermatological evaluation within 1 month",
+                "Monitor for changes and document with photos",
+                "Apply sun protection measures",
+                "Track any evolution in appearance",
+                "Follow up if concerned about changes"
+            ]
+        case .low:
+            recommendations = [
+                "Routine skin monitoring recommended",
+                "Annual dermatological check-up",
+                "Use sun protection (SPF 30+) daily",
+                "Self-examine monthly for changes",
+                "Document with photos for future comparison"
+            ]
         }
         
-        // Default recommendations if none extracted
-        if recommendations.isEmpty {
-            recommendations = [
-                "Professional medical evaluation recommended",
-                "Document changes with photos",
-                "Follow up if symptoms persist or worsen"
-            ]
+        // Add specific recommendations based on detected features
+        if lowercaseResponse.contains("biopsy") || lowercaseResponse.contains("melanoma") {
+            recommendations.insert("Discuss biopsy options with dermatologist", at: 1)
+        }
+        
+        if lowercaseResponse.contains("irregular") || lowercaseResponse.contains("asymmet") {
+            recommendations.append("Pay special attention to border irregularities")
         }
         
         let result = SkinAnalysisResult(
