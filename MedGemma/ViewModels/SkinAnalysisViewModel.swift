@@ -70,6 +70,7 @@ class SkinAnalysisViewModel: ObservableObject {
             )
             
             // Parse the response into structured result
+            print("Model response received: \(response)")
             analysisResult = parseAnalysisResponse(response)
             
             // Save to history
@@ -121,37 +122,82 @@ class SkinAnalysisViewModel: ObservableObject {
     }
     
     private func parseAnalysisResponse(_ response: String) -> SkinAnalysisResult {
-        // This is a simplified parser - in production, you'd use more sophisticated NLP
-        // For now, we'll create mock results based on the response
+        // Parse the actual model response instead of returning hardcoded results
+        print("Parsing model response: \(response)")
         
-        // Mock implementation - replace with actual parsing logic
-        let conditions = [
-            PotentialCondition(
-                name: "Benign Nevus (Mole)",
-                description: "Common benign skin growth with regular borders and uniform color",
-                confidence: 0.85
-            ),
-            PotentialCondition(
-                name: "Seborrheic Keratosis",
-                description: "Non-cancerous skin growth common in older adults",
-                confidence: 0.45
-            )
-        ]
+        // Extract conditions from the response
+        var conditions: [PotentialCondition] = []
+        var recommendations: [String] = []
+        var urgencyLevel: UrgencyLevel = .low
+        var confidence: Double = 0.8
         
-        let recommendations = [
-            "Monitor for any changes in size, color, or shape",
-            "Use sunscreen SPF 30+ daily",
-            "Consider annual skin check with dermatologist",
-            "Document with photos for comparison"
-        ]
+        // Parse response text for medical insights
+        let lowercaseResponse = response.lowercased()
         
-        let urgencyLevel: UrgencyLevel = .low
+        // Extract potential conditions based on medical keywords
+        if lowercaseResponse.contains("mole") || lowercaseResponse.contains("nevus") {
+            conditions.append(PotentialCondition(
+                name: "Possible Nevus/Mole",
+                description: "Pigmented lesion requiring evaluation",
+                confidence: 0.7
+            ))
+        }
+        
+        if lowercaseResponse.contains("inflammation") || lowercaseResponse.contains("red") {
+            conditions.append(PotentialCondition(
+                name: "Inflammatory Changes",
+                description: "Signs of skin inflammation detected",
+                confidence: 0.6
+            ))
+        }
+        
+        if lowercaseResponse.contains("irregular") || lowercaseResponse.contains("asymmet") {
+            conditions.append(PotentialCondition(
+                name: "Irregular Features",
+                description: "Asymmetrical or irregular characteristics observed",
+                confidence: 0.8
+            ))
+            urgencyLevel = .medium
+        }
+        
+        if lowercaseResponse.contains("concerning") || lowercaseResponse.contains("urgent") {
+            urgencyLevel = .high
+        }
+        
+        // If no specific conditions detected, create a general assessment
+        if conditions.isEmpty {
+            conditions.append(PotentialCondition(
+                name: "General Assessment",
+                description: "AI analysis completed - requires professional interpretation",
+                confidence: 0.75
+            ))
+        }
+        
+        // Extract recommendations from response or provide defaults
+        if lowercaseResponse.contains("consult") || lowercaseResponse.contains("professional") {
+            recommendations.append("Consult with a healthcare professional")
+        }
+        if lowercaseResponse.contains("monitor") || lowercaseResponse.contains("track") {
+            recommendations.append("Monitor for changes over time")
+        }
+        if lowercaseResponse.contains("sun") || lowercaseResponse.contains("protection") {
+            recommendations.append("Use sun protection (SPF 30+)")
+        }
+        
+        // Default recommendations if none extracted
+        if recommendations.isEmpty {
+            recommendations = [
+                "Professional medical evaluation recommended",
+                "Document changes with photos",
+                "Follow up if symptoms persist or worsen"
+            ]
+        }
         
         return SkinAnalysisResult(
             conditions: conditions,
             recommendations: recommendations,
             urgencyLevel: urgencyLevel,
-            confidence: 0.85,
+            confidence: confidence,
             timestamp: Date()
         )
     }
