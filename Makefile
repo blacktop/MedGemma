@@ -12,6 +12,7 @@ help:
 	@echo "  all                - Full pipeline: setup + model + build"
 	@echo "  clean-model        - Remove converted model files"
 	@echo "  test               - Run quick Python parsing tests"
+	@echo "  test-image         - Test with real melanoma image (Python)"
 	@echo "  test-ios           - Run full iOS unit tests"
 	@echo "  test-melanoma      - Test melanoma detection specifically"
 	@echo "  lint               - Run code linters"
@@ -97,6 +98,12 @@ test-quick:
 	@echo "Running quick parser tests..."
 	@swift MedGemma/Tests/TestRunner.swift --run-tests
 	@echo "✅ Quick tests completed"
+
+# Test with real melanoma image (Python)
+test-image:
+	@echo "Testing with real melanoma image from Wikipedia..."
+	cd tools/model-conversion && uv run python test_real_image.py
+	@echo "✅ Image test completed"
 
 # Test melanoma detection specifically
 test-melanoma:
