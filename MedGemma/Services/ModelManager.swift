@@ -92,6 +92,10 @@ class ModelManager: ObservableObject {
         print("Model unloaded to free memory")
     }
     
+    var shouldShowLoading: Bool {
+        return !isModelLoaded && !isLoading
+    }
+    
     func generateResponse(for prompt: String, context: [Message]) async throws -> String {
         // Lazy load model only when needed
         if !isModelLoaded {

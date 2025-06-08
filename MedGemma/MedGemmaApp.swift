@@ -21,7 +21,7 @@ struct MedGemmaApp: App {
     
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            MainAppView()
                 .modelContainer(sharedModelContainer)
                 .environmentObject(modelManager)
                 .onAppear {

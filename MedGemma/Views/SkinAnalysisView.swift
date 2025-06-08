@@ -115,16 +115,7 @@ struct SkinAnalysisView: View {
             .overlay(
                 Group {
                     if viewModel.isAnalyzing {
-                        Color.black.opacity(0.5)
-                            .ignoresSafeArea()
-                        VStack {
-                            ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
-                                .scaleEffect(1.5)
-                            Text("Analyzing image...")
-                                .foregroundColor(.white)
-                                .padding(.top)
-                        }
+                        AnalysisLoadingView()
                     }
                 }
             )
