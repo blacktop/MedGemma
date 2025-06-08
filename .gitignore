@@ -108,7 +108,7 @@ venv/
 # Model files
 *.mlpackage
 *.mlmodel
-mlx_model/
+tools/model-conversion/medgemma-4b-it-4bit
 *.safetensors
 *.bin
 

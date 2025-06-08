@@ -30,7 +30,7 @@ MODEL_OUTPUT = MedGemma/Resources/medgemma_4b_mobile.mlpackage
 
 convert-model:
 	@echo "Converting MedGemma model to CoreML..."
-	cd tools/model-conversion && python convert_model.py
+	cd tools/model-conversion && uv run convert_model.py
 	@echo "Moving model to iOS app resources..."
 	mkdir -p MedGemma/Resources
 	mv tools/model-conversion/medgemma_4b_mobile.mlpackage $(MODEL_OUTPUT)
