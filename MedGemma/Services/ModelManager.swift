@@ -235,10 +235,13 @@ class ModelManager: ObservableObject {
         let possibleOutputNames = ["output", "text_output", "generated_text", "response", "result"]
         
         for outputName in possibleOutputNames {
-            if let outputFeature = prediction.featureValue(for: outputName),
-               let outputText = outputFeature.stringValue {
-                print("Found output in feature: \(outputName)")
-                return formatModelOutput(outputText)
+            if let outputFeature = prediction.featureValue(for: outputName) {
+                // Handle different types of outputs
+                if outputFeature.type == .string {
+                    let outputText = outputFeature.stringValue
+                    print("Found output in feature: \(outputName)")
+                    return formatModelOutput(outputText)
+                }
             }
         }
         
