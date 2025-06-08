@@ -11,6 +11,9 @@ dependencies = [
     "mlx-lm>=0.24.1",
     "torch>=2.7.0",
     "transformers>=4.52.4",
+    "pillow>=10.0.0",
+    "numpy>=1.24.0",
+    "requests>=2.32.3",
 ]
 
 [tool.pyrefly]
