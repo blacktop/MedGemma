@@ -308,7 +308,9 @@ class ModelManager: ObservableObject {
         
         for outputName in possibleTextOutputs {
             if let textFeature = prediction.featureValue(for: outputName) {
-                if let generatedText = textFeature.stringValue {
+                // Check if this feature contains string data
+                if textFeature.type == .string {
+                    let generatedText = textFeature.stringValue
                     print("🔍 [OUTPUT EXTRACTION] Found generated text output: '\(outputName)'")
                     print("🔍 [OUTPUT EXTRACTION] Generated text: \(generatedText)")
                     return formatModelOutput(generatedText)
@@ -320,7 +322,8 @@ class ModelManager: ObservableObject {
         if availableFeatures.count == 1 {
             let outputName = availableFeatures.first!
             if let feature = prediction.featureValue(for: outputName) {
-                if let textValue = feature.stringValue {
+                if feature.type == .string {
+                    let textValue = feature.stringValue
                     print("🔍 [OUTPUT EXTRACTION] Found text in primary output: \(textValue)")
                     return formatModelOutput(textValue)
                 }
